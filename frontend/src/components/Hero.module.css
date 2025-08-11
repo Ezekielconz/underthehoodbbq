@@ -1,0 +1,105 @@
+.section {
+  position: relative;
+  isolation: isolate;
+  overflow: visible;
+  background: var(--ink);
+  color: #fff;
+
+  /* Fallback */
+  min-height: 80vh;
+  max-height: 100vh;
+
+  /* Safe viewport units for mobile UIs */
+  min-height: 80svh;
+  max-height: 100svh;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-inline: 16px;
+  padding-block: clamp(56px, 8vw, 96px);
+  position: relative;
+
+  /* Stretch to section height for vertical centering */
+  min-height: inherit;
+  display: grid;
+  align-items: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  gap: 40px;
+}
+
+.left { z-index: 1; }
+
+.titleImg {
+  width: min(90vw, 560px);
+  height: auto;
+  display: block;
+}
+
+.heading {
+  font-family: var(--font-hand), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-size: clamp(40px, 6vw, 60px);
+  line-height: 1.1;
+  margin: 0;
+}
+
+.ctas {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: .04em;
+  transition: transform .15s ease, filter .15s ease, background-color .15s ease, color .15s ease, border-color .15s ease;
+  will-change: transform;
+}
+.btn:active { transform: translateY(1px); }
+
+.primary { background: var(--brand); color: #fff; border: 1px solid transparent; }
+.primary:hover { filter: brightness(1.1); }
+
+.secondary { background: transparent; color: var(--brand); border: 1px solid var(--brand); }
+.secondary:hover { background: var(--brand); color: #fff; }
+
+.right { position: relative; }
+.graphic {
+  pointer-events: none;
+  user-select: none;
+  width: min(90vw, 600px);
+  height: auto;
+  display: block;
+}
+
+/* Desktop: two columns + overlap next section */
+@media (min-width: 768px) {
+  .grid { grid-template-columns: 1fr 1fr; gap: 48px; }
+  .ctas { flex-direction: row; }
+  .graphic {
+    width: 560px;
+    position: absolute;
+    right: 0;
+    bottom: -460px; /* overlap only on desktop */
+  }
+}
+
+/* Mobile tweaks: no overlap, a bit of breathing room */
+@media (max-width: 767px) {
+  .graphic { position: static; margin-top: 8px; }
+}

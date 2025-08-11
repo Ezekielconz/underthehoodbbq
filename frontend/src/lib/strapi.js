@@ -89,3 +89,45 @@ export function extractLogo(globalRes) {
     : null;
 }
 
+// --- Home (single type) ---
+export async function getHome() {
+  return strapiFetch('/home', {
+    'populate[heroTitle]': 'true',
+    'populate[heroGraphic]': 'true',
+    'fields[0]': 'button1Text',
+    'fields[1]': 'button1Url',
+    'fields[2]': 'button2Text',
+    'fields[3]': 'button2Url',
+  });
+}
+
+export function extractHomeHero(homeRes) {
+  const d = homeRes?.data || {};
+
+  // heroTitle (single media)
+  const heroTitleUrl =
+    d?.heroTitle?.url ||                              
+    d?.attributes?.heroTitle?.data?.attributes?.url;  
+
+  // heroGraphic (multiple media → pick first)
+  let heroGraphicUrl = null;
+  if (Array.isArray(d?.heroGraphic) && d.heroGraphic.length) {
+    heroGraphicUrl = d.heroGraphic[0]?.url;          
+  } else {
+    const arr = d?.attributes?.heroGraphic?.data;     
+    if (Array.isArray(arr) && arr.length) {
+      heroGraphicUrl = arr[0]?.attributes?.url;
+    } else if (d?.heroGraphic?.url) {
+      heroGraphicUrl = d.heroGraphic.url;           
+    }
+  }
+
+  return {
+    titleImg: heroTitleUrl ? mediaURL(heroTitleUrl) : null,
+    graphicImg: heroGraphicUrl ? mediaURL(heroGraphicUrl) : null,
+    primaryText: d?.button1Text ?? d?.attributes?.button1Text ?? 'Shop Now',
+    primaryUrl:  d?.button1Url  ?? d?.attributes?.button1Url  ?? '/shop',
+    secondaryText: d?.button2Text ?? d?.attributes?.button2Text ?? 'BBQ Services',
+    secondaryUrl:  d?.button2Url  ?? d?.attributes?.button2Url  ?? '/bbqservices',
+  };
+}
