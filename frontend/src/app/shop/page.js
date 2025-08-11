@@ -18,7 +18,7 @@ export default async function ShopPage() {
       <h1>Shop</h1>
 
       {items.length === 0 && (
-        <p>No products yet. (Make sure at least one product is <b>Published</b> in Strapi.)</p>
+        <p>Coming Soon!</p>
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 16 }}>
