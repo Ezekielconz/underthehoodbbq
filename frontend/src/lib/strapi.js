@@ -131,15 +131,33 @@ export function extractGlobals(res) {
 /* ----------------------------- Home (single) --------------------------- */
 
 export async function getHome() {
-  return strapiFetch('/home', {
-    'populate[heroTitle]': 'true',
-    'populate[heroGraphic]': 'true',
-    'fields[0]': 'button1Text',
-    'fields[1]': 'button1Url',
-    'fields[2]': 'button2Text',
-    'fields[3]': 'button2Url',
-  });
+  return strapiFetch(
+    '/home',
+    {
+      // hero media (kept as-is)
+      'populate[heroTitle]': 'true',
+      'populate[heroGraphic]': 'true',
+
+      // CTA scalars (your working set)
+      'fields[0]': 'button1Text',
+      'fields[1]': 'button1Url',
+      'fields[2]': 'button2Text',
+      'fields[3]': 'button2Url',
+
+      // nav section: populate each key explicitly
+      'populate[navSection]': 'true',
+      'populate[navSection][populate][leftItems]': 'true',
+      'populate[navSection][populate][rightItems]': 'true',
+      'populate[navSection][populate][image]': 'true',
+
+      // show drafts in dev
+      ...(process.env.NODE_ENV !== 'production' ? { publicationState: 'preview' } : {}),
+    },
+    { next: { revalidate: 0 } } // no cache while you debug
+  );
 }
+
+
 
 export function extractHomeHero(homeRes) {
   const d = homeRes?.data || {};
