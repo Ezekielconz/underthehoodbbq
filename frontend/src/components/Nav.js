@@ -1,4 +1,3 @@
-// src/components/Nav.js
 import Navbar from './Navbar';
 import { getGlobal, extractLogo } from '@/lib/strapi';
 
