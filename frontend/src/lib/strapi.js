@@ -1,3 +1,4 @@
+// src/lib/strapi.js
 const STRAPI_URL = process.env.STRAPI_URL;
 const STRAPI_TOKEN = process.env.STRAPI_TOKEN;
 
@@ -11,7 +12,14 @@ function toQuery(params = {}) {
   Object.entries(params).forEach(([k, v]) => {
     if (v == null) return;
     if (Array.isArray(v)) v.forEach((vv) => qs.append(k, vv));
-    else qs.append(k, String(v));
+    else if (typeof v === 'object') {
+      // allow nested params like { pagination: { pageSize: 1 } }
+      Object.entries(v).forEach(([kk, vv]) => {
+        if (vv != null) qs.append(`${k}[${kk}]`, String(vv));
+      });
+    } else {
+      qs.append(k, String(v));
+    }
   });
   const s = qs.toString();
   return s ? `?${s}` : '';
@@ -34,7 +42,8 @@ export async function strapiFetch(path, params = {}, fetchOptions = {}) {
   return res.json();
 }
 
-/* Products */
+/* ───────── Products ───────── */
+
 export async function getProducts() {
   return strapiFetch('/products', {
     populate: 'images,category',
@@ -62,18 +71,18 @@ export async function getCategories() {
   return strapiFetch('/categories', { 'sort[0]': 'name:asc' });
 }
 
-/* Global (single type, v5 shape) */
+/* ───────── Global (logo + basics) ─────────
+   NOTE: don't restrict fields here; it can hide relations in v5. */
+
 export async function getGlobal() {
   return strapiFetch('/global', {
-    'populate[logo]': 'true',
-    'fields[0]': 'name',
-    'fields[1]': 'email',
-    'fields[2]': 'phone',
+    populate: 'logo', // enough to include the media
   });
 }
 
 export function extractLogo(globalRes) {
-  const l = globalRes?.data?.logo; // v5 flattened
+  // v5 flattened
+  const l = globalRes?.data?.logo;
   if (l?.url) {
     return {
       url: mediaURL(l.url),
@@ -103,7 +112,8 @@ export function extractGlobals(res) {
   };
 }
 
-// --- Home (single type) ---
+/* ───────── Home (single type) ───────── */
+
 export async function getHome() {
   return strapiFetch('/home', {
     'populate[heroTitle]': 'true',
@@ -118,70 +128,64 @@ export async function getHome() {
 export function extractHomeHero(homeRes) {
   const d = homeRes?.data || {};
 
-  // heroTitle (single media)
   const heroTitleUrl =
-    d?.heroTitle?.url ||                              
-    d?.attributes?.heroTitle?.data?.attributes?.url;  
+    d?.heroTitle?.url ||
+    d?.attributes?.heroTitle?.data?.attributes?.url;
 
-  // heroGraphic (multiple media → pick first)
   let heroGraphicUrl = null;
   if (Array.isArray(d?.heroGraphic) && d.heroGraphic.length) {
-    heroGraphicUrl = d.heroGraphic[0]?.url;          
+    heroGraphicUrl = d.heroGraphic[0]?.url;
   } else {
-    const arr = d?.attributes?.heroGraphic?.data;     
+    const arr = d?.attributes?.heroGraphic?.data;
     if (Array.isArray(arr) && arr.length) {
       heroGraphicUrl = arr[0]?.attributes?.url;
     } else if (d?.heroGraphic?.url) {
-      heroGraphicUrl = d.heroGraphic.url;           
+      heroGraphicUrl = d.heroGraphic.url;
     }
   }
 
   return {
     titleImg: heroTitleUrl ? mediaURL(heroTitleUrl) : null,
     graphicImg: heroGraphicUrl ? mediaURL(heroGraphicUrl) : null,
-    primaryText: d?.button1Text ?? d?.attributes?.button1Text ?? 'Shop Now',
-    primaryUrl:  d?.button1Url  ?? d?.attributes?.button1Url  ?? '/shop',
+    primaryText:   d?.button1Text ?? d?.attributes?.button1Text ?? 'Shop Now',
+    primaryUrl:    d?.button1Url  ?? d?.attributes?.button1Url  ?? '/shop',
     secondaryText: d?.button2Text ?? d?.attributes?.button2Text ?? 'BBQ Services',
     secondaryUrl:  d?.button2Url  ?? d?.attributes?.button2Url  ?? '/bbqservices',
   };
 }
 
-// src/lib/strapi.js — add/replace these
+/* ───────── Footer (single type) ───────── */
 
 export async function getFooter() {
   return strapiFetch('/footer', {
+    // populate the three icon medias + socialLinks + nested icon
     'populate[nameIcon]': 'true',
     'populate[emailIcon]': 'true',
     'populate[phoneIcon]': 'true',
-    'populate[socialLinks]': 'true',
-    'populate[socialLinks][populate][icon]': 'true',
+    // in v5 this is enough to get the component array with icon populated:
+    'populate[socialLinks][populate]': 'icon',
   });
 }
 
 export function extractFooter(res) {
   const d = res?.data || {};
 
-  // handle your current names + the typo variants just in case
-  const nameIcon = d?.nameIcon?.url || d?.namelcon?.url || null;
-  const emailIcon = d?.emailIcon?.url || d?.emaillcon?.url || null;
-  const phoneIcon = d?.phoneIcon?.url || d?.phonelcon?.url || null;
-
   const socials = Array.isArray(d?.socialLinks)
-    ? d.socialLinks.map((s) => ({
-        label: s?.label || '',
-        url: s?.url || '',
-        icon: s?.icon?.url ? mediaURL(s.icon.url) : null,
-      })).filter((s) => s.url && s.label)
+    ? d.socialLinks
+        .map((s) => ({
+          label: s?.label || '',
+          url: s?.url || '',
+          icon: s?.icon?.url ? mediaURL(s.icon.url) : null,
+        }))
+        .filter((s) => s.url && s.label)
     : [];
 
   return {
-    // icons are optional; they can be null
     icons: {
-      name:  nameIcon  ? mediaURL(nameIcon)   : null,
-      email: emailIcon ? mediaURL(emailIcon)  : null,
-      phone: phoneIcon ? mediaURL(phoneIcon)  : null,
+      name:  d?.nameIcon?.url  ? mediaURL(d.nameIcon.url)  : null,
+      email: d?.emailIcon?.url ? mediaURL(d.emailIcon.url) : null,
+      phone: d?.phoneIcon?.url ? mediaURL(d.phoneIcon.url) : null,
     },
     socials,
   };
 }
-
