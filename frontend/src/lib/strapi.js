@@ -64,7 +64,12 @@ export async function getCategories() {
 
 /* Global (single type, v5 shape) */
 export async function getGlobal() {
-  return strapiFetch('/global', { 'populate[logo]': 'true' });
+  return strapiFetch('/global', {
+    'populate[logo]': 'true',
+    'fields[0]': 'name',
+    'fields[1]': 'email',
+    'fields[2]': 'phone',
+  });
 }
 
 export function extractLogo(globalRes) {
@@ -87,6 +92,15 @@ export function extractLogo(globalRes) {
         height: l2.height || 48,
       }
     : null;
+}
+
+export function extractGlobals(res) {
+  const d = res?.data || {};
+  return {
+    name:  d.name  ?? d.attributes?.name  ?? 'Under The Hood BBQ',
+    email: d.email ?? d.attributes?.email ?? '',
+    phone: d.phone ?? d.attributes?.phone ?? '',
+  };
 }
 
 // --- Home (single type) ---
@@ -131,3 +145,43 @@ export function extractHomeHero(homeRes) {
     secondaryUrl:  d?.button2Url  ?? d?.attributes?.button2Url  ?? '/bbqservices',
   };
 }
+
+// src/lib/strapi.js — add/replace these
+
+export async function getFooter() {
+  return strapiFetch('/footer', {
+    'populate[nameIcon]': 'true',
+    'populate[emailIcon]': 'true',
+    'populate[phoneIcon]': 'true',
+    'populate[socialLinks]': 'true',
+    'populate[socialLinks][populate][icon]': 'true',
+  });
+}
+
+export function extractFooter(res) {
+  const d = res?.data || {};
+
+  // handle your current names + the typo variants just in case
+  const nameIcon = d?.nameIcon?.url || d?.namelcon?.url || null;
+  const emailIcon = d?.emailIcon?.url || d?.emaillcon?.url || null;
+  const phoneIcon = d?.phoneIcon?.url || d?.phonelcon?.url || null;
+
+  const socials = Array.isArray(d?.socialLinks)
+    ? d.socialLinks.map((s) => ({
+        label: s?.label || '',
+        url: s?.url || '',
+        icon: s?.icon?.url ? mediaURL(s.icon.url) : null,
+      })).filter((s) => s.url && s.label)
+    : [];
+
+  return {
+    // icons are optional; they can be null
+    icons: {
+      name:  nameIcon  ? mediaURL(nameIcon)   : null,
+      email: emailIcon ? mediaURL(emailIcon)  : null,
+      phone: phoneIcon ? mediaURL(phoneIcon)  : null,
+    },
+    socials,
+  };
+}
+

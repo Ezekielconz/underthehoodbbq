@@ -2,6 +2,7 @@
 import './globals.css';
 import { Barlow_Condensed, Gaegu } from 'next/font/google';
 import Nav from '@/components/Nav';
+import Footer from '@/components/Footer';
 
 const barlowCondensed = Barlow_Condensed({
   subsets: ['latin'],
@@ -22,6 +23,7 @@ export default function RootLayout({ children }) {
       <body className={`${barlowCondensed.className} ${barlowCondensed.variable} ${gaegu.variable}`}>
         <Nav />
         {children}
+        <Footer /> 
       </body>
     </html>
   );
