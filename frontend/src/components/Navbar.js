@@ -31,8 +31,10 @@ export default function Navbar({ logo }) {
   const [open, setOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
+  // close menu on route change
   useEffect(() => setOpen(false), [pathname]);
 
+  // simple cart badge from localStorage
   useEffect(() => {
     const read = () => {
       try {
@@ -45,49 +47,71 @@ export default function Navbar({ logo }) {
     return () => window.removeEventListener('storage', read);
   }, []);
 
+  // lock body scroll when menu is open (mobile)
+  useEffect(() => {
+    if (open) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [open]);
+
   return (
-    <header className={styles.header}>
-      <div className={styles.inner}>
-        <Link href="/" className={styles.brand} aria-label="Under The Hood BBQ home">
-          {logo?.url ? (
-            <Image
-              src={logo.url}
-              alt={logo.alt}
-              width={logo.width}
-              height={logo.height}
-              priority
-              style={{ height: '40px', width: 'auto' }}
-            />
-          ) : (
-            <span className="font-hand" style={{ fontWeight: 700 }}>
-              Under The Hood BBQ
-            </span>
-          )}
-        </Link>
+    <>
+      {/* Mobile backdrop */}
+      <div
+        className={`${styles.scrim} ${open ? styles.scrimShow : ''}`}
+        onClick={() => setOpen(false)}
+        aria-hidden={!open}
+      />
 
-        <nav className={`${styles.nav} ${open ? styles.open : ''}`} id="main-menu">
-          {LINKS.map((l) => (
-            <NavLink key={l.href} {...l} pathname={pathname} onClick={() => setOpen(false)} />
-          ))}
-          <Link href="/cart" className={`${styles.link} ${styles.cart}`}>
-            <span aria-hidden>🛒</span>
-            <span className={styles.badge}>{cartCount}</span>
-            <span className="sr-only">Cart</span>
+      <header className={styles.header}>
+        <div className={styles.inner}>
+          <Link href="/" className={styles.brand} aria-label="Under The Hood BBQ home">
+            {logo?.url ? (
+              <Image
+                src={logo.url}
+                alt={logo.alt}
+                width={logo.width}
+                height={logo.height}
+                priority
+                className={styles.logo}
+              />
+            ) : (
+              <span className="font-hand" style={{ fontWeight: 700 }}>
+                Under The Hood BBQ
+              </span>
+            )}
           </Link>
-        </nav>
 
-        <button
-          className={styles.burger}
-          aria-label="Toggle menu"
-          aria-controls="main-menu"
-          aria-expanded={open ? 'true' : 'false'}
-          onClick={() => setOpen((o) => !o)}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
-      </div>
-    </header>
+          <nav
+            className={`${styles.nav} ${open ? styles.open : ''}`}
+            id="main-menu"
+            aria-hidden={!open}
+          >
+            {LINKS.map((l) => (
+              <NavLink key={l.href} {...l} pathname={pathname} onClick={() => setOpen(false)} />
+            ))}
+            <Link href="/cart" className={`${styles.link} ${styles.cart}`} onClick={() => setOpen(false)}>
+              <span aria-hidden>🛒</span>
+              <span className={styles.badge}>{cartCount}</span>
+              <span className="sr-only">Cart</span>
+            </Link>
+          </nav>
+
+          <button
+            className={`${styles.burger} ${open ? styles.burgerOpen : ''}`}
+            aria-label="Toggle menu"
+            aria-controls="main-menu"
+            aria-expanded={open ? 'true' : 'false'}
+            onClick={() => setOpen((o) => !o)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+        </div>
+      </header>
+    </>
   );
 }
