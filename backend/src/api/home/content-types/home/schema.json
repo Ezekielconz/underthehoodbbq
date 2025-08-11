@@ -42,6 +42,11 @@
     },
     "button2Url": {
       "type": "string"
+    },
+    "navSection": {
+      "type": "component",
+      "component": "navsection.nav-section",
+      "repeatable": false
     }
   }
 }
