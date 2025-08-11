@@ -50,3 +50,8 @@ export async function getProductBySlug(slug) {
 export async function getCategories() {
   return strapiFetch('/categories', { 'sort[0]': 'name:asc' });
 }
+
+
+export async function getGlobal() {
+  return strapiFetch('/global', { 'populate[logo]': 'true' });
+}

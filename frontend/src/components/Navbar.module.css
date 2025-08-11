@@ -8,17 +8,24 @@
 }
 
 .brand {
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none; color: var(--brand);
   font-family: var(--font-hand), ui-sans-serif, system-ui, sans-serif;
-  font-weight: 700; letter-spacing: .5px; text-decoration: none; color: var(--ink);
+  font-weight: 700; letter-spacing: .5px;
 }
 
 .nav { display: none; align-items: center; gap: 12px; }
+
+/* links are brand orange */
 .link {
-  text-decoration: none; color: var(--ink);
-  padding: 8px 10px; border-radius: 10px; transition: background .15s ease, color .15s ease;
+  text-decoration: none;
+  color: var(--brand);                 /* #F15921 */
+  padding: 8px 10px;
+  border-radius: 10px;
+  transition: background .15s ease, color .15s ease;
 }
-.link:hover { background: rgba(241, 89, 33, 0.10); }   /* brand tint */
-.active { color: var(--brand); font-weight: 700; }
+.link:hover { background: rgba(241, 89, 33, 0.10); }
+.active { text-decoration: underline; text-underline-offset: 4px; font-weight: 700; }
 
 .cart { position: relative; padding-right: 28px; }
 .badge {

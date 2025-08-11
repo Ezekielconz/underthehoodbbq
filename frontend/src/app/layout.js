@@ -1,14 +1,12 @@
-// app/layout.js
 import './globals.css';
 import { Barlow_Condensed, Gaegu } from 'next/font/google';
-import Navbar from '@/components/Navbar';
+import Nav from '@/components/Nav'; // <-- server wrapper
 
 export const metadata = {
   title: 'Under The Hood BBQ',
   description: 'Slow-smoked goodness.',
 };
 
-// Load both fonts and expose CSS variables
 const barlowCondensed = Barlow_Condensed({
   subsets: ['latin'],
   weight: ['100','200','300','400','500','600','700','800','900'],
@@ -26,9 +24,8 @@ const gaegu = Gaegu({
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      {/* attach font vars to body */}
       <body className={`${barlowCondensed.variable} ${gaegu.variable}`}>
-        <Navbar />
+        <Nav />
         {children}
       </body>
     </html>

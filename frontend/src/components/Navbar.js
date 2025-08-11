@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -8,9 +9,8 @@ import styles from './Navbar.module.css';
 const LINKS = [
   { href: '/', label: 'Home' },
   { href: '/shop', label: 'Shop' },
-  // add more when ready:
-  // { href: '/about', label: 'About' },
-  // { href: '/contact', label: 'Contact' },
+  { href: '/bbqservices', label: 'BBQ Services' },
+  { href: '/contact', label: 'Contact' },
 ];
 
 function NavLink({ href, label, pathname, onClick }) {
@@ -26,15 +26,13 @@ function NavLink({ href, label, pathname, onClick }) {
   );
 }
 
-export default function Navbar() {
+export default function Navbar({ logo }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
-  // close mobile menu when route changes
   useEffect(() => setOpen(false), [pathname]);
 
-  // very minimal cart badge from localStorage (you can replace later)
   useEffect(() => {
     const read = () => {
       try {
@@ -50,7 +48,22 @@ export default function Navbar() {
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        <Link href="/" className={styles.brand}>Under The Hood BBQ</Link>
+        <Link href="/" className={styles.brand} aria-label="Under The Hood BBQ home">
+          {logo?.url ? (
+            <Image
+              src={logo.url}
+              alt={logo.alt}
+              width={logo.width}
+              height={logo.height}
+              priority
+              style={{ height: '40px', width: 'auto' }}
+            />
+          ) : (
+            <span className="font-hand" style={{ fontWeight: 700 }}>
+              Under The Hood BBQ
+            </span>
+          )}
+        </Link>
 
         <nav className={`${styles.nav} ${open ? styles.open : ''}`} id="main-menu">
           {LINKS.map((l) => (
