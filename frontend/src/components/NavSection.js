@@ -55,11 +55,20 @@ function Byline() {
 
 export function NavSectionView({ angle = -8, left = [], right = [], centerImg = null }) {
   return (
-    /* Set --angle on the SECTION so both sand and ribbons use it */
-    <section className={styles.section} aria-label="Highlights navigation" style={{ '--angle': `${angle}deg` }}>
-      {/* NEW: non-skewed orange underlay */}
+    <section
+      className={styles.section}
+      aria-label="Highlights navigation"
+      style={{ '--angle': `${angle}deg` }}
+    >
+      {/* Non-skewed orange underlay */}
       <div className={styles.brandUnderlay} aria-hidden="true" />
 
+      {/* Byline pinned to the top of the first (skewed) orange band */}
+      <div className={styles.bylineAbs}>
+        <Byline />
+      </div>
+
+      {/* Skewed content ribbons */}
       <div className={styles.ribbons}>
         <div className={styles.columns}>
           <NavList items={left} side="left" />
@@ -77,20 +86,8 @@ export function NavSectionView({ angle = -8, left = [], right = [], centerImg = 
             )}
           </div>
 
-          {/* Byline in the center lane */}
-          <div className={styles.bylineCenter}>
-            <Byline />
-          </div>
-
           <NavList items={right} side="right" />
         </div>
-
-        {/* Debug
-        {process.env.NODE_ENV !== 'production' && (
-          <pre style={{ fontSize: 12, color: '#fff' }}>
-            {JSON.stringify({ left, right, centerImg }, null, 2)}
-          </pre>
-        )} */}
       </div>
     </section>
   );

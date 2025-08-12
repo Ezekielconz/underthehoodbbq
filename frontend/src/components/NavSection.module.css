@@ -19,7 +19,7 @@
 
   /* side bias at this size */
   --left-drop: -70px;
-  --right-lift: 420px;
+  --right-lift: 70px;
 
   /* sand sizing */
   --sand-height: 450px;
@@ -31,10 +31,14 @@
 
   /* non-skewed underlay behind the orange */
   --brand-underlay-overlap: 7vh;  /* how far above the seam it starts */
-  --brand-underlay-bottom: 24vh;  /* how far past the bottom it extends */
+  --brand-underlay-bottom: 5vh;   /* how far past the bottom it extends */
 
   /* anti-alias seam fix between skewed + flat oranges */
   --seam-fix: 2px;
+
+  /* byline offset inside the orange band */
+  --byline-top-offset: -40px; /* nudge down from top edge of the skewed orange */
+  --byline-right: 360px;
 }
 
 /* Sand (skewed) */
@@ -78,7 +82,24 @@
   z-index: -3; /* behind ::after and ::before */
 }
 
-/* Ribbon/content skew (unchanged) */
+/* --- BYLINE: absolute so it doesn't affect the grid columns --- */
+.bylineAbs {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--sand-height) + var(--brand-gap) - var(--seam-fix) + var(--byline-top-offset));
+  transform: translateX(-50%) skewY(var(--angle));
+  z-index: 2;
+  pointer-events: none;
+}
+
+.byline {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  white-space: nowrap;
+}
+
+/* Skewed content ribbons */
 .ribbons {
   --skew: var(--angle);
   --skew-magic: 0.0703;               /* tan(8°)/2 */
@@ -118,20 +139,93 @@
   letter-spacing: .02em;
   font-size: 76px;
   line-height: 0.90;
-  transition: transform .15s ease, text-shadow .15s ease, opacity .15s ease;
+  /* keep transform stable for GPU + keyframes */
+  transform: translateY(0) scale(1);
+  transform-origin: center;
+  will-change: transform, text-shadow;
+  /* transitions only for non-transform props to avoid fighting keyframes */
+  transition: text-shadow .15s ease, opacity .15s ease;
 }
-a.link:hover,
-a.link:focus-visible {
-  transform: translateY(-1px);
+
+/* Animate ONLY anchors with real URLs */
+a.link[href]:not([href=""]):hover,
+a.link[href]:not([href=""]):focus-visible {
+  animation:
+    link-pop 160ms cubic-bezier(.2,.9,.2,1.2) forwards,
+    link-breathe 2200ms ease-in-out 160ms infinite alternate;
   text-shadow: 0 2px 0 rgba(0,0,0,.15), 0 0 18px rgba(241,89,33,.35);
 }
 
-.center { display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; margin-top: calc(-1 * var(--img-lift)); }
-.centerImg { width: 460px; height: auto; transform: skewY(calc(-1 * var(--skew))); }
+/* Explicitly keep disabled items static */
+.link[aria-disabled="true"] {
+  animation: none !important;
+  transform: none !important;
+  text-shadow: none !important;
+}
 
-.bylineCenter { grid-column: 2; justify-self: center; z-index: 2; transform: translateY(calc(-1 * var(--skew-pad) + 12px)); }
-.byline { display: inline-flex; align-items: center; gap: 16px; pointer-events: none; white-space: nowrap; }
-.bylineNames, .bylineKicker { color: #111111; text-transform: uppercase; font-family: var(--font-gaegu), ui-sans-serif, system-ui, sans-serif !important; letter-spacing: .01em; line-height: 1; font-weight: 700; }
+/* Pop-in with a tiny overshoot */
+@keyframes link-pop {
+  0%   { transform: translateY(0) scale(1); }
+  70%  { transform: translateY(-2px) scale(1.08); }
+  100% { transform: translateY(-1px) scale(1.05); }
+}
+
+/* Gentle breathing while hovered */
+@keyframes link-breathe {
+  0%   { transform: translateY(-1px) scale(1.05); }
+  100% { transform: translateY(-2px) scale(1.07); }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  a.link[href]:not([href=""]):hover,
+  a.link[href]:not([href=""]):focus-visible {
+    animation: none;
+    transform: translateY(-1px) scale(1.03);
+  }
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  margin-top: calc(-1 * var(--img-lift));
+}
+.centerImg {
+  width: 460px;
+  height: auto;
+  transform: skewY(calc(-1 * var(--skew)));
+}
+
+/* Byline typography */
+.bylineNames, .bylineKicker {
+  color: #111111;
+  text-transform: uppercase;
+  font-family: var(--font-gaegu), ui-sans-serif, system-ui, sans-serif !important;
+  letter-spacing: .01em;
+  line-height: 1;
+  font-weight: 700;
+}
 .bylineNames { font-size: 24px; }
 .bylineKicker { font-size: 20px; opacity: 0.95; }
-.crown { width: 24px; height: auto; transform: translateY(-0.06em); filter: drop-shadow(0 1px 0 rgba(0,0,0,.25)); }
+
+.crown {
+  width: 24px;
+  height: auto;
+  transform: translateY(-0.06em);
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,.25));
+}
+
+/* Override byline positioning to right-align (intentional second block) */
+.bylineAbs {
+  position: absolute;
+  right: var(--byline-right);                          /* <- anchor to right */
+  left: auto;
+  top: calc(var(--sand-height) + var(--brand-gap) - var(--seam-fix) + var(--byline-top-offset));
+  transform: skewY(var(--angle));                      /* keep angle */
+  z-index: 2;
+  pointer-events: none;
+  text-align: right;
+}
