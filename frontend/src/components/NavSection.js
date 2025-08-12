@@ -1,4 +1,3 @@
-// src/components/NavSection.js
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './NavSection.module.css';
@@ -8,8 +7,6 @@ import { getHome, extractNavSection } from '@/lib/strapi';
 function NavSectionView({ angle = -8, left = [], right = [], centerImg = null }) {
   return (
     <section className={styles.section} aria-label="Highlights navigation">
-      <div className={styles.bg} aria-hidden />
-
       <div className={styles.ribbons} style={{ '--angle': `${angle}deg` }}>
         <div className={styles.columns}>
           <ul className={`${styles.list} ${styles.col}`}>
@@ -66,10 +63,7 @@ export default async function NavSection(props) {
   let right = props?.right ?? [];
   let centerImg = props?.centerImg ?? null;
 
-  const missingAll =
-    (!left || left.length === 0) &&
-    (!right || right.length === 0) &&
-    !centerImg;
+  const missingAll = (!left?.length && !right?.length && !centerImg);
 
   if (missingAll) {
     try {
@@ -79,17 +73,15 @@ export default async function NavSection(props) {
       right = data.right || [];
       centerImg = data.centerImg || null;
     } catch {
-      // fine—will fall back below
+      /* fall back below */
     }
   }
 
-  // Ensure first line exists (non-clickable) if nothing came back
-  if (!left || left.length === 0) {
+  if (!left?.length) {
     left = [{ label: "NELSON'S AWARD WINNING", href: null }];
   }
 
   return <NavSectionView angle={angle} left={left} right={right} centerImg={centerImg} />;
 }
 
-/* Optional: export the view if you ever want to render without fetch */
 export { NavSectionView };
