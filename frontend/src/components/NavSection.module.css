@@ -4,65 +4,109 @@
   overflow: visible;
   z-index: 1;
 
-  --overlap: clamp(40px, 7vw, 96px);
+  /* base tuning */
+  --angle: -8deg;
+
+  /* fixed for your 1920×1080 dev target */
+  --overlap: -10px;
   margin-top: calc(-1 * var(--overlap));
   padding-top: var(--overlap);
 
-  --img-lift: clamp(24px, 10vw, 160px);
-  --sides-lift: clamp(8px, 6vw, 120px);
-  --left-shift: clamp(24px, 10vw, 220px);
-  --right-shift: clamp(8px, 5vw, 120px);
+  --img-lift: 160px;
+  --sides-lift: 115px;
+  --left-shift: 192px;
+  --right-shift: 96px;
+
+  /* side bias at this size */
+  --left-drop: -70px;
+  --right-lift: 420px;
+
+  /* sand sizing */
+  --sand-height: 450px;
+  --sand-overhang: 0px;
+
+  /* skewed orange placement */
+  --brand-gap: -150px;      /* neg = overlap with sand */
+  --brand-height: 150px;    /* thickness of the skewed orange band */
+
+  /* non-skewed underlay behind the orange */
+  --brand-underlay-overlap: 7vh;  /* how far above the seam it starts */
+  --brand-underlay-bottom: 24vh;  /* how far past the bottom it extends */
+
+  /* anti-alias seam fix between skewed + flat oranges */
+  --seam-fix: 2px;
 }
 
+/* Sand (skewed) */
 .section::before {
   content: "";
   position: absolute;
   left: -5vw;
   right: -5vw;
-  top: -20px;
-  bottom: -12px;
+  top: calc(-1 * var(--sand-overhang));
+  height: var(--sand-height);
   background: var(--sand);
-  clip-path: polygon(0 40%, 100% 0%, 100% 100%, 0% 100%);
+  transform: skewY(var(--angle));
+  transform-origin: 50% 0;
   z-index: -1;
 }
 
+/* ORANGE — skewed, sits just below the sand (with overlap to hide seam) */
+.section::after {
+  content: "";
+  position: absolute;
+  left: -5vw;
+  right: -5vw;
+  top: calc(var(--sand-height) + var(--brand-gap) - var(--seam-fix));
+  height: calc(var(--brand-height) + (var(--seam-fix) * 2));
+  background: var(--brand);
+  transform: translateZ(0) skewY(var(--angle));
+  backface-visibility: hidden;
+  outline: 1px solid transparent;
+  transform-origin: 50% 0;
+  z-index: -1; /* in front of the underlay */
+}
+
+/* ORANGE UNDERLAY — NOT SKEWED, stretches to avoid gaps on huge screens */
+.brandUnderlay {
+  position: absolute;
+  left: -5vw;
+  right: -5vw;
+  top: calc(var(--sand-height) + var(--brand-gap) - var(--brand-underlay-overlap));
+  bottom: var(--brand-underlay-bottom);
+  background: var(--brand);
+  z-index: -3; /* behind ::after and ::before */
+}
+
+/* Ribbon/content skew (unchanged) */
 .ribbons {
-  --angle: -8deg;
-  transform: rotate(var(--angle));
-  padding-block: clamp(20px, 4.5vw, 44px);
+  --skew: var(--angle);
+  --skew-magic: 0.0703;               /* tan(8°)/2 */
+  --skew-pad: calc(100vw * var(--skew-magic));
+  transform: skewY(var(--skew));
+  padding-block: var(--skew-pad);
+  position: relative;
 }
 
 .columns {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: clamp(8px, 2.5vw, 24px);
+  gap: 24px;
   width: 120vw;
   margin-left: -10vw;
 }
 
 .list { list-style: none; margin: 0; padding: 0; }
-
 .item { margin: 0; }
 .item + .item { margin-top: 0; }
 .item + .item .link { margin-top: -0.20em; }
 
-.col {
-  display: flex;
-  flex-direction: column;
-  transform: translateY(calc(-1 * var(--sides-lift)));
-}
-
-.columns > .col:first-child {
-  align-items: flex-end;
-  text-align: right;
-  margin-right: calc(-1 * var(--left-shift));  /* move left items right */
-}
-.columns > .col:last-child  {
-  align-items: flex-start;
-  text-align: left;
-  margin-left: calc(-1 * var(--right-shift)); /* move right items left */
-}
+.col { display: flex; flex-direction: column; }
+.col[data-side="left"]  { transform: translateY(calc(-1 * var(--skew-pad) + var(--left-drop))); }
+.columns > .col:first-child { align-items: flex-end; text-align: right; margin-right: calc(-1 * var(--left-shift)); }
+.col[data-side="right"] { transform: translateY(calc(-1 * var(--skew-pad) - var(--right-lift))); }
+.columns > .col:last-child { align-items: flex-start; text-align: left; margin-left: calc(-1 * var(--right-shift)); }
 
 .link {
   display: inline-block;
@@ -72,52 +116,22 @@
   text-transform: uppercase;
   font-weight: 800;
   letter-spacing: .02em;
-  font-size: clamp(30px, 7vw, 76px);
+  font-size: 76px;
   line-height: 0.90;
   transition: transform .15s ease, text-shadow .15s ease, opacity .15s ease;
 }
-
-.disabled { opacity: .95; cursor: default; pointer-events: none; }
-
 a.link:hover,
 a.link:focus-visible {
   transform: translateY(-1px);
   text-shadow: 0 2px 0 rgba(0,0,0,.15), 0 0 18px rgba(241,89,33,.35);
 }
 
-.center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 1;
-  margin-top: calc(-1 * var(--img-lift));
-}
+.center { display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; margin-top: calc(-1 * var(--img-lift)); }
+.centerImg { width: 460px; height: auto; transform: skewY(calc(-1 * var(--skew))); }
 
-.centerImg {
-  width: clamp(220px, 34vw, 460px);
-  height: auto;
-  transform: rotate(calc(-1 * var(--angle)));
-}
-
-@media (max-width: 900px) {
-  .columns {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    width: 140vw;
-    margin-left: -20vw;
-    gap: 12px;
-  }
-  .center { order: 2; }
-  .col:first-child { order: 1; }
-  .col:last-child  { order: 3; }
-  .section::before { top: -16px; bottom: -10px; }
-  .section {
-    --img-lift: clamp(20px, 14vw, 140px);
-    --sides-lift: clamp(4px, 8vw, 80px);
-    --left-shift: 0px;
-    --right-shift: 0px;
-  }
-  .item + .item .link { margin-top: -0.18em; }
-  .link { line-height: 0.92; font-size: clamp(28px, 9vw, 70px); }
-}
+.bylineCenter { grid-column: 2; justify-self: center; z-index: 2; transform: translateY(calc(-1 * var(--skew-pad) + 12px)); }
+.byline { display: inline-flex; align-items: center; gap: 16px; pointer-events: none; white-space: nowrap; }
+.bylineNames, .bylineKicker { color: #111111; text-transform: uppercase; font-family: var(--font-gaegu), ui-sans-serif, system-ui, sans-serif !important; letter-spacing: .01em; line-height: 1; font-weight: 700; }
+.bylineNames { font-size: 24px; }
+.bylineKicker { font-size: 20px; opacity: 0.95; }
+.crown { width: 24px; height: auto; transform: translateY(-0.06em); filter: drop-shadow(0 1px 0 rgba(0,0,0,.25)); }

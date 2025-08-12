@@ -11,7 +11,6 @@ function NavItem({ it, side }) {
       </Link>
     );
   }
-  // No URL: render as an <a> so anchor styles still apply, but make it inert.
   return (
     <a
       href=""
@@ -37,11 +36,32 @@ function NavList({ items = [], side }) {
   );
 }
 
+function Byline() {
+  return (
+    <div className={styles.byline} aria-label="With Dave and Michelle King">
+      <Image
+        src="/crown.svg"
+        alt=""
+        width={28}
+        height={28}
+        className={styles.crown}
+        aria-hidden="true"
+        priority={false}
+      />
+      <span className={styles.bylineNames}>Dave and Michelle King</span>
+    </div>
+  );
+}
+
 export function NavSectionView({ angle = -8, left = [], right = [], centerImg = null }) {
   return (
-    <section className={styles.section} aria-label="Highlights navigation">
-      <div className={styles.ribbons} style={{ '--angle': `${angle}deg` }}>
-        <div className={styles.columns} /* if needed, try: style={{ overflow: 'visible' }} */>
+    /* Set --angle on the SECTION so both sand and ribbons use it */
+    <section className={styles.section} aria-label="Highlights navigation" style={{ '--angle': `${angle}deg` }}>
+      {/* NEW: non-skewed orange underlay */}
+      <div className={styles.brandUnderlay} aria-hidden="true" />
+
+      <div className={styles.ribbons}>
+        <div className={styles.columns}>
           <NavList items={left} side="left" />
 
           <div className={styles.center}>
@@ -57,11 +77,16 @@ export function NavSectionView({ angle = -8, left = [], right = [], centerImg = 
             )}
           </div>
 
+          {/* Byline in the center lane */}
+          <div className={styles.bylineCenter}>
+            <Byline />
+          </div>
+
           <NavList items={right} side="right" />
         </div>
 
-        {/* Debug: uncomment to verify data is present */}
-        {/* {process.env.NODE_ENV !== 'production' && (
+        {/* Debug
+        {process.env.NODE_ENV !== 'production' && (
           <pre style={{ fontSize: 12, color: '#fff' }}>
             {JSON.stringify({ left, right, centerImg }, null, 2)}
           </pre>
@@ -84,7 +109,6 @@ export default async function NavSection(props) {
     leftCMS = data.left || [];
     rightCMS = data.right || [];
     centerImgCMS = data.centerImg || null;
-    // console.log('[NavSection] CMS:', { leftCMS, rightCMS, centerImgCMS });
   } catch (e) {
     console.error('NavSection fetch failed:', e);
   }
