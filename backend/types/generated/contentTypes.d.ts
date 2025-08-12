@@ -546,15 +546,20 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    art: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     category: Schema.Attribute.Relation<'manyToOne', 'api::category.category'>;
+    colour: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    dairyFree: Schema.Attribute.Boolean;
     description: Schema.Attribute.Text;
+    glutenFree: Schema.Attribute.Boolean;
     images: Schema.Attribute.Media<
       'images' | 'files' | 'videos' | 'audios',
       true
     >;
+    ingredients: Schema.Attribute.Text;
     inStock: Schema.Attribute.Boolean;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -562,14 +567,18 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       'api::product.product'
     > &
       Schema.Attribute.Private;
+    nutrition: Schema.Attribute.Component<'nutrition.nutrition', true>;
     price: Schema.Attribute.Decimal;
     publishedAt: Schema.Attribute.DateTime;
     sku: Schema.Attribute.String;
     slug: Schema.Attribute.UID<'title'>;
+    subTitle: Schema.Attribute.String;
+    sugarFree: Schema.Attribute.Boolean;
     title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    veganFriendly: Schema.Attribute.Boolean;
   };
 }
 

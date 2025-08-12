@@ -14,6 +14,9 @@
     "title": {
       "type": "string"
     },
+    "subTitle": {
+      "type": "string"
+    },
     "slug": {
       "type": "uid",
       "targetField": "title"
@@ -24,6 +27,16 @@
     "images": {
       "type": "media",
       "multiple": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "art": {
+      "type": "media",
+      "multiple": false,
       "allowedTypes": [
         "images",
         "files",
@@ -45,6 +58,29 @@
       "relation": "manyToOne",
       "target": "api::category.category",
       "inversedBy": "products"
+    },
+    "ingredients": {
+      "type": "text"
+    },
+    "colour": {
+      "type": "string"
+    },
+    "glutenFree": {
+      "type": "boolean"
+    },
+    "dairyFree": {
+      "type": "boolean"
+    },
+    "sugarFree": {
+      "type": "boolean"
+    },
+    "veganFriendly": {
+      "type": "boolean"
+    },
+    "nutrition": {
+      "type": "component",
+      "component": "nutrition.nutrition",
+      "repeatable": true
     }
   }
 }

@@ -19,7 +19,28 @@ export interface NavsectionNavSection extends Struct.ComponentSchema {
   attributes: {
     image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     leftItems: Schema.Attribute.Component<'linkitem.link-item', true>;
+    product: Schema.Attribute.Relation<'oneToOne', 'api::product.product'>;
     rightItems: Schema.Attribute.Component<'linkitem.link-item', true>;
+  };
+}
+
+export interface NutritionNutrition extends Struct.ComponentSchema {
+  collectionName: 'components_nutrition_nutritions';
+  info: {
+    displayName: 'nutrition';
+    icon: 'seed';
+  };
+  attributes: {
+    carbs: Schema.Attribute.Decimal;
+    energy: Schema.Attribute.Integer;
+    fat: Schema.Attribute.Decimal;
+    notes: Schema.Attribute.Text;
+    protein: Schema.Attribute.Decimal;
+    saturated: Schema.Attribute.Decimal;
+    servingPerPacket: Schema.Attribute.Integer;
+    servingSize: Schema.Attribute.String;
+    sodiums: Schema.Attribute.Decimal;
+    sugars: Schema.Attribute.Decimal;
   };
 }
 
@@ -40,6 +61,7 @@ declare module '@strapi/strapi' {
     export interface ComponentSchemas {
       'linkitem.link-item': LinkitemLinkItem;
       'navsection.nav-section': NavsectionNavSection;
+      'nutrition.nutrition': NutritionNutrition;
       'sociallinks.social-links': SociallinksSocialLinks;
     }
   }

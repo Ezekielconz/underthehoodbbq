@@ -1,0 +1,41 @@
+{
+  "collectionName": "components_nutrition_nutritions",
+  "info": {
+    "displayName": "nutrition",
+    "icon": "seed"
+  },
+  "options": {},
+  "attributes": {
+    "servingPerPacket": {
+      "type": "integer"
+    },
+    "servingSize": {
+      "type": "string"
+    },
+    "energy": {
+      "type": "integer"
+    },
+    "protein": {
+      "type": "decimal"
+    },
+    "fat": {
+      "type": "decimal"
+    },
+    "saturated": {
+      "type": "decimal"
+    },
+    "carbs": {
+      "type": "decimal"
+    },
+    "sugars": {
+      "type": "decimal"
+    },
+    "sodiums": {
+      "type": "decimal"
+    },
+    "notes": {
+      "type": "text"
+    }
+  },
+  "config": {}
+}

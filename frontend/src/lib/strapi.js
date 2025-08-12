@@ -224,3 +224,39 @@ export function extractNavSection(homeRes) {
 
   return { left, right, centerImg };
 }
+
+export async function getLatestProductLite() {
+  const res = await strapiFetch('/products', {
+    populate: 'category,art',
+    'fields[0]': 'title',
+    'fields[1]': 'subTitle', // note: your field name is camel-cased
+    'fields[2]': 'slug',
+    'fields[3]': 'colour',
+    'fields[4]': 'glutenFree',
+    'fields[5]': 'dairyFree',
+    'fields[6]': 'sugarFree',
+    'fields[7]': 'veganFriendly',
+    sort: 'createdAt:desc',
+    publicationState: 'live',
+    'pagination[pageSize]': 1,
+  });
+  return res?.data?.[0] || null;
+}
+
+export function extractLatestProduct(p) {
+  const a = p?.attributes || p || {};
+  return {
+    title: a.title || '',
+    subTitle: a.subTitle || a.subtitle || '',
+    slug: a.slug || '',
+    colour: a.colour || '#F15921',
+    category: a?.category?.data?.attributes?.name || '',
+    diet: {
+      glutenFree: !!a.glutenFree,
+      dairyFree: !!a.dairyFree,
+      sugarFree: !!a.sugarFree,
+      veganFriendly: !!a.veganFriendly,
+    },
+    art: bestMediaUrl(a.art) || null,
+  };
+}
