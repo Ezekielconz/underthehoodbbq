@@ -56,7 +56,8 @@ export async function strapiFetch(path, params = {}, fetchOptions = {}) {
 
 export async function getProducts() {
   return strapiFetch('/products', {
-    populate: 'images,category',
+    'populate[0]': 'images',
+    'populate[1]': 'category',
     'fields[0]': 'title',
     'fields[1]': 'slug',
     'fields[2]': 'price',
@@ -70,7 +71,8 @@ export async function getProducts() {
 export async function getProductBySlug(slug) {
   const data = await strapiFetch('/products', {
     'filters[slug][$eq]': slug,
-    populate: 'images,category',
+    'populate[0]': 'images',
+    'populate[1]': 'category',
     publicationState: 'live',
     'pagination[pageSize]': 1,
   });
@@ -82,7 +84,7 @@ export async function getCategories() {
 }
 
 export async function getGlobal() {
-  return strapiFetch('/global', { populate: 'logo' });
+  return strapiFetch('/global', { 'populate[0]': 'logo' });
 }
 
 export function extractLogo(globalRes) {
@@ -120,20 +122,17 @@ export async function getHome() {
   return strapiFetch(
     '/home',
     {
-      'populate[heroTitle]': 'true',
-      'populate[heroGraphic]': 'true',
-      'fields[0]': 'button1Text',
-      'fields[1]': 'button1Url',
-      'fields[2]': 'button2Text',
-      'fields[3]': 'button2Url',
+      // media at root
+      'populate[0]': 'heroTitle',
+      'populate[1]': 'heroGraphic',
 
-      // --- navSection + nested components ---
-      'populate[navSection]': 'true',
-      'populate[navSection][populate]': 'deep',
-      'populate[navSection][populate][leftItems]': 'true',
-      'populate[navSection][populate][rightItems]': 'true',
-      'populate[navSection][populate][image]': 'true',
-      'populate[navSection][populate][product]': 'true', // <-- ensure product id is there
+      // component + nested bits (dot-notation)
+      'populate[2]': 'navSection',
+      'populate[3]': 'navSection.leftItems',
+      'populate[4]': 'navSection.rightItems',
+      'populate[5]': 'navSection.image',
+      // ⚠️ DO NOT populate the relation inside the component; it triggers a 400:
+      // 'populate[6]': 'navSection.product',
 
       ...(process.env.NODE_ENV !== 'production' ? { publicationState: 'preview' } : {}),
     },
@@ -172,10 +171,11 @@ export function extractHomeHero(homeRes) {
 
 export async function getFooter() {
   return strapiFetch('/footer', {
-    'populate[nameIcon]': 'true',
-    'populate[emailIcon]': 'true',
-    'populate[phoneIcon]': 'true',
-    'populate[socialLinks][populate]': 'icon',
+    'populate[0]': 'nameIcon',
+    'populate[1]': 'emailIcon',
+    'populate[2]': 'phoneIcon',
+    'populate[3]': 'socialLinks',
+    'populate[4]': 'socialLinks.icon',
   });
 }
 
@@ -233,26 +233,38 @@ export function extractNavSection(homeRes) {
  * -------------------------------------------------------------------------------------*/
 
 function extractSelectedProductIdFromHome(homeRes) {
-  // Supports both v4/v5 + flattened/attributes shapes
+  // Supports v4/v5 + flattened/attributes shapes
   const root = homeRes?.data || {};
   const ns =
     root.navSection ??
     root.attributes?.navSection ??
     {};
   const prod = ns?.product;
-  // could be { id } or { data:{ id } }
-  return prod?.id ?? prod?.data?.id ?? null;
+
+  // could be { id|documentId } or { data:{ id|documentId } } or even a plain number id
+  const id =
+    prod?.id ??
+    prod?.data?.id ??
+    (typeof prod === 'number' ? prod : null);
+
+  const documentId =
+    prod?.documentId ??
+    prod?.data?.documentId ??
+    null;
+
+  return { id, documentId };
 }
 
 export async function getNewSectionProduct() {
   const isDev = process.env.NODE_ENV !== 'production';
 
-  // Try to read selected product id from Home
+  // Try to read selected product identifier from Home
   const home = await getHome().catch(() => null);
-  const selectedId = extractSelectedProductIdFromHome(home);
+  const selected = extractSelectedProductIdFromHome(home);
 
   const params = {
-    populate: 'category,art',
+    'populate[0]': 'category',
+    'populate[1]': 'art',
     'fields[0]': 'title',
     'fields[1]': 'subTitle',
     'fields[2]': 'slug',
@@ -265,8 +277,10 @@ export async function getNewSectionProduct() {
     'pagination[pageSize]': 1,
   };
 
-  if (selectedId) {
-    params['filters[id][$eq]'] = selectedId;
+  if (selected?.id) {
+    params['filters[id][$eq]'] = selected.id;
+  } else if (selected?.documentId) {
+    params['filters[documentId][$eq]'] = selected.documentId;
   } else {
     params['sort[0]'] = 'createdAt:desc';
   }
@@ -283,7 +297,7 @@ export function extractNewSectionProduct(p) {
     subTitle: a.subTitle || a.subtitle || '',
     slug: a.slug || '',
     colour: a.colour || '#F15921',
-    category: a?.category?.data?.attributes?.name || '',
+    category: a?.category?.data?.attributes?.name || a?.category?.name || '',
     diet: {
       glutenFree: !!a.glutenFree,
       dairyFree: !!a.dairyFree,
