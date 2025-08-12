@@ -233,15 +233,20 @@ export function extractNavSection(homeRes) {
  * -------------------------------------------------------------------------------------*/
 
 function extractSelectedProductIdFromHome(homeRes) {
+  // Supports both v4/v5 + flattened/attributes shapes
+  const root = homeRes?.data || {};
   const ns =
-    homeRes?.data?.navSection ??
-    homeRes?.data?.attributes?.navSection ??
+    root.navSection ??
+    root.attributes?.navSection ??
     {};
   const prod = ns?.product;
+  // could be { id } or { data:{ id } }
   return prod?.id ?? prod?.data?.id ?? null;
 }
 
 export async function getNewSectionProduct() {
+  const isDev = process.env.NODE_ENV !== 'production';
+
   // Try to read selected product id from Home
   const home = await getHome().catch(() => null);
   const selectedId = extractSelectedProductIdFromHome(home);
@@ -256,7 +261,7 @@ export async function getNewSectionProduct() {
     'fields[5]': 'dairyFree',
     'fields[6]': 'sugarFree',
     'fields[7]': 'veganFriendly',
-    publicationState: 'live',
+    publicationState: isDev ? 'preview' : 'live',
     'pagination[pageSize]': 1,
   };
 
@@ -266,7 +271,8 @@ export async function getNewSectionProduct() {
     params['sort[0]'] = 'createdAt:desc';
   }
 
-  const res = await strapiFetch('/products', params);
+  // disable caching while you wire this up
+  const res = await strapiFetch('/products', params, { next: { revalidate: 0 } });
   return res?.data?.[0] || null;
 }
 
@@ -284,43 +290,6 @@ export function extractNewSectionProduct(p) {
       sugarFree: !!a.sugarFree,
       veganFriendly: !!a.veganFriendly,
     },
-    art: bestMediaUrl(a.art) || null,
-  };
-}
-
-/* (Optional: keep your previous helpers if you still want them elsewhere) */
-export async function getLatestProductLite() {
-  const res = await strapiFetch('/products', {
-    populate: 'category,art',
-    'fields[0]': 'title',
-    'fields[1]': 'subTitle',
-    'fields[2]': 'slug',
-    'fields[3]': 'colour',
-    'fields[4]': 'glutenFree',
-    'fields[5]': 'dairyFree',
-    'fields[6]': 'sugarFree',
-    'fields[7]': 'veganFriendly',
-    sort: 'createdAt:desc',
-    publicationState: 'live',
-    'pagination[pageSize]': 1,
-  });
-  return res?.data?.[0] || null;
-}
-
-export function extractLatestProduct(p) {
-  const a = p?.attributes || p || {};
-  return {
-    title: a.title || '',
-    subTitle: a.subTitle || a.subtitle || '',
-    slug: a.slug || '',
-    colour: a.colour || '#F15921',
-    category: a?.category?.data?.attributes?.name || '',
-    diet: {
-      glutenFree: !!a.glutenFree,
-      dairyFree: !!a.dairyFree,
-      sugarFree: !!a.sugarFree,
-      veganFriendly: !!a.veganFriendly,
-    },
-    art: bestMediaUrl(a.art) || null,
+    art: a.art ? (a.art.data ? bestMediaUrl(a.art) : bestMediaUrl(a.art)) : null,
   };
 }

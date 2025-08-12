@@ -5,7 +5,27 @@ import { getNewSectionProduct, extractNewSectionProduct } from '@/lib/strapi';
 
 export default async function NewSection() {
   const row = await getNewSectionProduct().catch(() => null);
-  if (!row) return null;
+
+  // Helpful hint during setup so the section is visible
+  if (!row) {
+    if (process.env.NODE_ENV !== 'production') {
+      return (
+        <section className={styles.section} style={{ '--accent': '#444' }}>
+          <div className={styles.container}>
+            <div className={styles.content}>
+              <p className={styles.kicker}>New • Product</p>
+              <h2 className={styles.title}>No product selected</h2>
+              <p className={styles.subtitle}>
+                Pick a product in <strong>Home → navSection → product</strong>{' '}
+                or publish a product to show here.
+              </p>
+            </div>
+          </div>
+        </section>
+      );
+    }
+    return null;
+  }
 
   const p = extractNewSectionProduct(row);
   const flags = [
