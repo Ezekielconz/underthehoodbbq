@@ -135,11 +135,16 @@
   background: var(--accent);
   color: #fff;
 
-  /* pull the panel up behind the image: */
-  margin: -60px auto 0;     /* ← overlaps 60px under the image */
-  padding: 90px 20px 20px;  /* ↑ extra top padding so text starts below image */
+  /* pull the panel up behind the image */
+  margin: -60px auto 0;
+  padding: 90px 20px 20px;
   position: relative;
-  z-index: 1;               /* below the image (.art z=2), above page bg */
+  z-index: 1;
+
+  /* ↓ drop the top-left corner by 20px (diagonal top edge) */
+  clip-path: polygon(0 70px, 100% 0, 100% 100%, 0 100%);
+  /* optional: smooth GPU hint */
+  will-change: clip-path;
 }
 
 /* headings & text (white on accent panel) */
@@ -157,8 +162,8 @@
   font-weight: 800;
   max-width: 60ch;
   opacity: .92;
-  font-size: 72px;          /* biggest */
-  line-height: 0.2;
+  font-size: 90px;          /* biggest */
+  line-height: 0.3;
   color: #fff;
 }
 .category {
