@@ -19,7 +19,6 @@ export interface NavsectionNavSection extends Struct.ComponentSchema {
   attributes: {
     image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     leftItems: Schema.Attribute.Component<'linkitem.link-item', true>;
-    product: Schema.Attribute.Relation<'oneToOne', 'api::product.product'>;
     rightItems: Schema.Attribute.Component<'linkitem.link-item', true>;
   };
 }

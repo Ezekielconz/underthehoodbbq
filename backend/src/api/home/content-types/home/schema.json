@@ -47,6 +47,11 @@
       "type": "component",
       "component": "navsection.nav-section",
       "repeatable": false
+    },
+    "product": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::product.product"
     }
   }
 }
