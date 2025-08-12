@@ -1,24 +1,41 @@
 .section {
   position: relative;
   isolation: isolate;
+  overflow: hidden;          /* keep any overflow tidy */
   background: var(--sand);
   color: var(--ink, #111);
   --accent: #F15921;
 }
 
-/* FULL-BLEED "What's New" bar */
+/* FULL-BLEED "What's New" bar — solid fill even when skewed */
 .labelBar {
-  background: var(--ink, #111);
+  position: relative;
   width: 100vw;
   margin-inline: calc(50% - 50vw);
-  padding-block: 14px;
-  margin-bottom: 50px;
+  padding-top: 70px;         /* room for the skew */
+  margin-bottom: 100px;
+
   display: flex;
   justify-content: center;
   align-items: center;
+  background: transparent;   /* background comes from ::before */
+  overflow: visible;
 }
-
+.labelBar::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: -500px;               /* vertical overscan so corners stay filled */
+  bottom: -10px;
+  left: -10vw;               /* horizontal overscan beyond viewport */
+  right: -10vw;
+  background: var(--ink, #111);
+  transform: skewY(-8deg);
+  transform-origin: center;
+}
 .label {
+  position: relative;
+  z-index: 1;                /* above the ::before background */
   color: #fff;
   font-family: var(--font-gaegu), ui-sans-serif, system-ui, sans-serif !important;
   font-weight: 700;
@@ -27,6 +44,7 @@
   line-height: 1;
   font-size: 56px;
   display: inline-block;
+  transform: skewY(-8deg);   /* text angled too */
 }
 
 /* --- 3-column container --- */
@@ -40,7 +58,6 @@
   gap: 24px;
   align-items: start;
 }
-
 @media (min-width: 960px) {
   .container {
     grid-template-columns: 260px 560px 260px; /* left | center | right */
@@ -52,7 +69,6 @@
 .colLeft  { grid-column: 1; justify-self: center; }
 .colCenter{ grid-column: 1; }
 .colRight { grid-column: 1; }
-
 @media (min-width: 960px) {
   .colLeft  {
     grid-column: 1;
@@ -72,7 +88,6 @@
   padding: 0;
   width: 100%;
 }
-
 .badges {
   list-style: none;
   display: flex;
@@ -80,11 +95,7 @@
   gap: 12px;
   align-items: center;      /* center the stack */
 }
-
-.badgesPlaceholder {
-  min-height: 12px; /* keeps grid tidy when no badges */
-}
-
+.badgesPlaceholder { min-height: 12px; }
 .badge {
   display: block;
   width: 100%;
@@ -98,7 +109,7 @@
 }
 
 /* CENTER: image + text */
-.media { position: relative; text-align: center; }
+.media { position: relative; text-align: center; margin-bottom: 0; }
 .art {
   width: min(80vw, 560px);
   height: auto;
@@ -106,24 +117,29 @@
   pointer-events: none;
   user-select: none;
   position: relative;
-  z-index: 1;
+  z-index: 2;               /* above the color panel */
   filter: drop-shadow(0 12px 24px rgba(0,0,0,.20));
 }
 
 .content {
-  max-width: 65ch;
+  /* match the image width so the panel aligns nicely */
+  width: min(80vw, 560px);
   margin: 0 auto;
   text-transform: uppercase;
   font-family: var(--font-hand), ui-sans-serif, system-ui, sans-serif; /* Gaegu via --font-hand */
   text-align: center;
 }
 
-/* colored panel using backend color */
+/* colored panel rises up under the image */
 .textPanel {
   background: var(--accent);
   color: #fff;
-  padding-top: 30px;
-  margin-top: 16px;
+
+  /* pull the panel up behind the image: */
+  margin: -60px auto 0;     /* ← overlaps 60px under the image */
+  padding: 90px 20px 20px;  /* ↑ extra top padding so text starts below image */
+  position: relative;
+  z-index: 1;               /* below the image (.art z=2), above page bg */
 }
 
 /* headings & text (white on accent panel) */
@@ -131,26 +147,25 @@
   margin: 0;
   font-weight: 800;
   letter-spacing: -0.01em;
-  font-size: 32px;  /* same as .category */
+  font-size: 32px;          /* same as .category */
   line-height: 1.1;
   color: #fff;
+  opacity: 0.7;             /* 70% */
 }
-
 .subtitle {
   margin: 12px 0 0 0;
   font-weight: 800;
   max-width: 60ch;
   opacity: .92;
-  font-size: 72px;  /* biggest */
+  font-size: 72px;          /* biggest */
   line-height: 0.2;
   color: #fff;
 }
-
 .category {
   margin: 10px 0 0 0;
   font-weight: 700;
   letter-spacing: .08em;
   color: #fff;
-  opacity: .95;
-  font-size: 32px;  /* same as .title */
+  font-size: 32px;          /* same as .title */
+  opacity: 0.7;             /* 70% */
 }
