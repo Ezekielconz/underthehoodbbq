@@ -1,21 +1,16 @@
-// src/lib/strapi.js
 const STRAPI_URL = process.env.STRAPI_URL;
 const STRAPI_TOKEN = process.env.STRAPI_TOKEN;
-
-/* ------------------------------ Utilities ------------------------------ */
 
 export function mediaURL(url) {
   if (!url) return '';
   return url.startsWith('http') ? url : `${STRAPI_URL}${url}`;
 }
 
-// Prefer the largest format; fall back to original url (works for v4/v5, PNG/SVG)
 function bestMediaUrl(mediaLike) {
   if (!mediaLike) return null;
-  const m = mediaLike?.data?.attributes || mediaLike; // v4 or v5 flat
+  const m = mediaLike?.data?.attributes || mediaLike;
   if (!m) return null;
 
-  // If Strapi generated formats, pick the widest
   const formats = m.formats || {};
   let best = null;
   for (const f of Object.values(formats)) {
@@ -25,7 +20,6 @@ function bestMediaUrl(mediaLike) {
   return url ? mediaURL(url) : null;
 }
 
-// Supports nested params like { pagination: { pageSize: 1 } }
 function toQuery(params = {}) {
   const qs = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {
@@ -60,8 +54,6 @@ export async function strapiFetch(path, params = {}, fetchOptions = {}) {
   return res.json();
 }
 
-/* ------------------------------ Products ------------------------------- */
-
 export async function getProducts() {
   return strapiFetch('/products', {
     populate: 'images,category',
@@ -89,15 +81,12 @@ export async function getCategories() {
   return strapiFetch('/categories', { 'sort[0]': 'name:asc' });
 }
 
-/* --------------------------- Global (single) --------------------------- */
-
 export async function getGlobal() {
-  // Don’t restrict fields; just populate media
   return strapiFetch('/global', { populate: 'logo' });
 }
 
 export function extractLogo(globalRes) {
-  const flat = globalRes?.data?.logo; // v5 flat
+  const flat = globalRes?.data?.logo;
   if (flat?.url || flat?.formats) {
     return {
       url: bestMediaUrl(flat),
@@ -106,7 +95,6 @@ export function extractLogo(globalRes) {
       height: flat.height || 48,
     };
   }
-  // v4 fallback
   const v4 = globalRes?.data?.attributes?.logo;
   const url = bestMediaUrl(v4);
   return url
@@ -128,41 +116,42 @@ export function extractGlobals(res) {
   };
 }
 
-/* ----------------------------- Home (single) --------------------------- */
-
 export async function getHome() {
   return strapiFetch(
     '/home',
     {
-      // hero media (kept as-is)
       'populate[heroTitle]': 'true',
       'populate[heroGraphic]': 'true',
-
-      // CTA scalars (your working set)
       'fields[0]': 'button1Text',
       'fields[1]': 'button1Url',
       'fields[2]': 'button2Text',
       'fields[3]': 'button2Url',
 
-      // nav section: populate each key explicitly
+      // --- navSection + nested components ---
       'populate[navSection]': 'true',
+      'populate[navSection][populate]': 'deep', // ensure nested repeatables come through in v5
       'populate[navSection][populate][leftItems]': 'true',
       'populate[navSection][populate][rightItems]': 'true',
       'populate[navSection][populate][image]': 'true',
 
-      // show drafts in dev
       ...(process.env.NODE_ENV !== 'production' ? { publicationState: 'preview' } : {}),
     },
-    { next: { revalidate: 0 } } // no cache while you debug
+    { next: { revalidate: 0 } }
   );
 }
 
-
+// Normalize item: either direct fields or { attributes: { ... } } or { data:{attributes:{...}} }
+function _pluckItem(it) {
+  if (!it) return null;
+  const a = it?.attributes || it?.data?.attributes || it;
+  const label = String(a?.label ?? '').trim();
+  const url = a?.url ?? null;
+  if (!label) return null;
+  return { label, href: url || null };
+}
 
 export function extractHomeHero(homeRes) {
   const d = homeRes?.data || {};
-
-  // Accept v5 flat or v4 nested
   const heroTitle   = d?.heroTitle   ?? d?.attributes?.heroTitle   ?? null;
   const heroGraphic = d?.heroGraphic ?? d?.attributes?.heroGraphic ?? null;
 
@@ -173,15 +162,12 @@ export function extractHomeHero(homeRes) {
   return {
     titleImg: titleImg || null,
     graphicImg: graphicImg || null,
-    // Buttons: tolerate both v5 flat and v4 nested names
     primaryText:   d?.button1Text ?? d?.attributes?.button1Text ?? 'Shop Now',
     primaryUrl:    d?.button1Url  ?? d?.attributes?.button1Url  ?? '/shop',
     secondaryText: d?.button2Text ?? d?.attributes?.button2Text ?? 'BBQ Services',
     secondaryUrl:  d?.button2Url  ?? d?.attributes?.button2Url  ?? '/bbqservices',
   };
 }
-
-/* ----------------------------- Footer (single) ------------------------- */
 
 export async function getFooter() {
   return strapiFetch('/footer', {
@@ -194,7 +180,6 @@ export async function getFooter() {
 
 export function extractFooter(res) {
   const d = res?.data || {};
-
   const socials = Array.isArray(d?.socialLinks)
     ? d.socialLinks
         .map((s) => ({
@@ -204,7 +189,6 @@ export function extractFooter(res) {
         }))
         .filter((s) => s.url && s.label)
     : [];
-
   return {
     icons: {
       name:  bestMediaUrl(d?.nameIcon),
@@ -215,41 +199,28 @@ export function extractFooter(res) {
   };
 }
 
-/* ------------------------- Nav Section (Home) -------------------------- */
-
 export function extractNavSection(homeRes) {
-  const d  = homeRes?.data ?? {};
-
-  // navSection can be flat (v5), nested in attributes (v4), or a relation with .data.attributes
-  const ns0 =
-    d.navSection ??
-    d.attributes?.navSection ??
-    d.attributes?.nav_section ?? // just in case of snake_case
+  const ns =
+    homeRes?.data?.navSection ??
+    homeRes?.data?.attributes?.navSection ??
     {};
 
-  const ns = ns0?.data?.attributes ?? ns0; // unwrap relation if present
+  // Cope with variations: leftItems vs leftitems, optional .data arrays
+  const leftRaw =
+    (Array.isArray(ns.leftItems) && ns.leftItems) ||
+    (Array.isArray(ns.leftitems) && ns.leftitems) ||
+    (Array.isArray(ns?.leftItems?.data) && ns.leftItems.data) ||
+    [];
+  const rightRaw =
+    (Array.isArray(ns.rightItems) && ns.rightItems) ||
+    (Array.isArray(ns.rightitems) && ns.rightitems) ||
+    (Array.isArray(ns?.rightItems?.data) && ns.rightItems.data) ||
+    [];
 
-  // helper: accept array or {data:[...]}
-  const arr = (x) => (Array.isArray(x) ? x : Array.isArray(x?.data) ? x.data : []);
+  const left  = leftRaw.map(_pluckItem).filter(Boolean);
+  const right = rightRaw.map(_pluckItem).filter(Boolean);
 
-  // normalize each item regardless of v4/v5 or field names
-  const norm = (it) => {
-    const a = it?.attributes ?? it; // unwrap relation item
-    const label =
-      a?.label ?? a?.Label ?? a?.text ?? a?.Text ?? a?.title ?? a?.Title ?? '';
-    const href =
-      a?.url ?? a?.Url ?? a?.href ?? a?.Href ?? a?.link ?? a?.Link ?? '';
-    return { label: String(label || '').trim(), href: href || null };
-  };
-
-  // tolerate multiple possible keys/casing
-  const leftSrc  = arr(ns.leftItems  ?? ns.LeftItems  ?? ns.left  ?? ns.Left);
-  const rightSrc = arr(ns.rightItems ?? ns.RightItems ?? ns.right ?? ns.Right);
-
-  const left  = leftSrc.map(norm).filter((i) => i.label);
-  const right = rightSrc.map(norm).filter((i) => i.label);
-
-  const centerImg = bestMediaUrl(ns.image ?? ns.Image) || null;
+  const centerImg = bestMediaUrl(ns.image) || null;
 
   return { left, right, centerImg };
 }

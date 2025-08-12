@@ -10,7 +10,7 @@
 
   --img-lift: clamp(24px, 10vw, 160px);
   --sides-lift: clamp(8px, 6vw, 120px);
-  --left-shift: clamp(8px, 5vw, 120px);
+  --left-shift: clamp(24px, 10vw, 220px);
   --right-shift: clamp(8px, 5vw, 120px);
 }
 

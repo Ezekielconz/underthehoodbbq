@@ -3,23 +3,46 @@ import Link from 'next/link';
 import styles from './NavSection.module.css';
 import { getHome, extractNavSection } from '@/lib/strapi';
 
-/** Pure presentational view */
-function NavSectionView({ angle = -8, left = [], right = [], centerImg = null }) {
+function NavItem({ it, side }) {
+  if (it?.href) {
+    return (
+      <Link href={it.href} className={styles.link} data-side={side}>
+        {it.label}
+      </Link>
+    );
+  }
+  // No URL: render as an <a> so anchor styles still apply, but make it inert.
+  return (
+    <a
+      href=""
+      aria-disabled="true"
+      className={styles.link}
+      data-side={side}
+      style={{ pointerEvents: 'none', opacity: 0.9, textDecoration: 'none' }}
+    >
+      {it.label}
+    </a>
+  );
+}
+
+function NavList({ items = [], side }) {
+  return (
+    <ul className={`${styles.list} ${styles.col}`} data-side={side}>
+      {items.map((it, i) => (
+        <li key={`${side}-${i}`} className={styles.item}>
+          <NavItem it={it} side={side} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function NavSectionView({ angle = -8, left = [], right = [], centerImg = null }) {
   return (
     <section className={styles.section} aria-label="Highlights navigation">
       <div className={styles.ribbons} style={{ '--angle': `${angle}deg` }}>
-        <div className={styles.columns}>
-          <ul className={`${styles.list} ${styles.col}`}>
-            {left.map((it, i) => (
-              <li key={`L-${i}`} className={styles.item}>
-                {it.href ? (
-                  <Link href={it.href} className={styles.link}>{it.label}</Link>
-                ) : (
-                  <span className={`${styles.link} ${styles.disabled}`}>{it.label}</span>
-                )}
-              </li>
-            ))}
-          </ul>
+        <div className={styles.columns} /* if needed, try: style={{ overflow: 'visible' }} */>
+          <NavList items={left} side="left" />
 
           <div className={styles.center}>
             {centerImg && (
@@ -34,54 +57,41 @@ function NavSectionView({ angle = -8, left = [], right = [], centerImg = null })
             )}
           </div>
 
-          <ul className={`${styles.list} ${styles.col}`}>
-            {right.map((it, i) => (
-              <li key={`R-${i}`} className={styles.item}>
-                {it.href ? (
-                  <Link href={it.href} className={styles.link}>{it.label}</Link>
-                ) : (
-                  <span className={`${styles.link} ${styles.disabled}`}>{it.label}</span>
-                )}
-              </li>
-            ))}
-          </ul>
+          <NavList items={right} side="right" />
         </div>
+
+        {/* Debug: uncomment to verify data is present */}
+        {/* {process.env.NODE_ENV !== 'production' && (
+          <pre style={{ fontSize: 12, color: '#fff' }}>
+            {JSON.stringify({ left, right, centerImg }, null, 2)}
+          </pre>
+        )} */}
       </div>
     </section>
   );
 }
 
-/**
- * Default export: server component.
- * - If you pass left/right/centerImg, it renders them.
- * - If not, it fetches from Strapi Home.navSection.
- */
 export default async function NavSection(props) {
   const angle = props?.angle ?? -8;
 
-  let left = props?.left ?? [];
-  let right = props?.right ?? [];
-  let centerImg = props?.centerImg ?? null;
+  let leftCMS = [];
+  let rightCMS = [];
+  let centerImgCMS = null;
 
-  const missingAll = (!left?.length && !right?.length && !centerImg);
-
-  if (missingAll) {
-    try {
-      const home = await getHome();
-      const data = extractNavSection(home);
-      left = data.left || [];
-      right = data.right || [];
-      centerImg = data.centerImg || null;
-    } catch {
-      /* fall back below */
-    }
+  try {
+    const home = await getHome();
+    const data = extractNavSection(home);
+    leftCMS = data.left || [];
+    rightCMS = data.right || [];
+    centerImgCMS = data.centerImg || null;
+    // console.log('[NavSection] CMS:', { leftCMS, rightCMS, centerImgCMS });
+  } catch (e) {
+    console.error('NavSection fetch failed:', e);
   }
 
-  if (!left?.length) {
-    left = [{ label: "NELSON'S AWARD WINNING", href: null }];
-  }
+  const left = Array.isArray(props?.left) && props.left.length ? props.left : leftCMS;
+  const right = Array.isArray(props?.right) && props.right.length ? props.right : rightCMS;
+  const centerImg = props?.centerImg ?? centerImgCMS;
 
   return <NavSectionView angle={angle} left={left} right={right} centerImg={centerImg} />;
 }
-
-export { NavSectionView };
