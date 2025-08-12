@@ -10,30 +10,47 @@ export default async function NewSection() {
     if (process.env.NODE_ENV !== 'production') {
       return (
         <section className={styles.section} style={{ '--accent': '#444' }}>
-          {/* FULL-WIDTH What's New bar at very top */}
           <div className={styles.labelBar}>
             <span className={styles.label}>What’s New</span>
           </div>
 
           <div className={styles.container}>
-            <div className={styles.media}>
-              <Image
-                src="/hero.svg"
-                alt=""
-                width={560}
-                height={560}
-                className={styles.art}
-                priority={false}
-              />
+            {/* LEFT: badges */}
+            <div className={styles.colLeft}>
+              <ul className={styles.badges} role="list">
+                <li className={styles.badge}>Sample</li>
+                <li className={styles.badge}>Badge</li>
+              </ul>
             </div>
-            <div className={styles.content}>
-              <h2 className={styles.title}>No product selected</h2>
-              <p className={styles.subtitle}>
-                Pick a product in <strong>Home → navSection → product</strong> or publish a product
-                to show here.
-              </p>
-              <p className={styles.category}>Product</p>
+
+            {/* CENTER: image + text */}
+            <div className={styles.colCenter}>
+              <div className={styles.media}>
+                <Image
+                  src="/hero.svg"
+                  alt=""
+                  width={560}
+                  height={560}
+                  className={styles.art}
+                  priority={false}
+                />
+              </div>
+
+              <div className={styles.content}>
+                {/* colored panel */}
+                <div className={styles.textPanel}>
+                  <h2 className={styles.title}>No product selected</h2>
+                  <p className={styles.subtitle}>
+                    Pick a product in <strong>Home → navSection → product</strong> or publish a
+                    product to show here.
+                  </p>
+                  <p className={styles.category}>Product</p>
+                </div>
+              </div>
             </div>
+
+            {/* RIGHT: empty for future */}
+            <div className={styles.colRight} aria-hidden="true" />
           </div>
         </section>
       );
@@ -51,38 +68,49 @@ export default async function NewSection() {
 
   return (
     <section className={styles.section} style={{ '--accent': p.colour }}>
-      {/* FULL-WIDTH What's New bar at very top */}
       <div className={styles.labelBar}>
         <span className={styles.label}>What’s New</span>
       </div>
 
       <div className={styles.container}>
-        {/* IMAGE CENTERED */}
-        <div className={styles.media}>
-          <Image
-            src={p.art || '/hero.svg'}
-            alt={p.title || ''}
-            width={560}
-            height={560}
-            className={styles.art}
-            priority={false}
-          />
-        </div>
-
-        {/* INFO BELOW */}
-        <div className={styles.content}>
-          <h2 className={styles.title}>{p.title}</h2>
-          {p.subTitle && <p className={styles.subtitle}>{p.subTitle}</p>}
-          <p className={styles.category}>{p.category || 'Product'}</p>
-
-          {flags.length > 0 && (
+        {/* LEFT: badges */}
+        <div className={styles.colLeft}>
+          {flags.length > 0 ? (
             <ul className={styles.badges} role="list">
               {flags.map((f) => (
                 <li key={f} className={styles.badge}>{f}</li>
               ))}
             </ul>
+          ) : (
+            <div className={styles.badgesPlaceholder} aria-hidden="true" />
           )}
         </div>
+
+        {/* CENTER: image + text */}
+        <div className={styles.colCenter}>
+          <div className={styles.media}>
+            <Image
+              src={p.art || '/hero.svg'}
+              alt={p.title || ''}
+              width={560}
+              height={560}
+              className={styles.art}
+              priority={false}
+            />
+          </div>
+
+          <div className={styles.content}>
+            {/* colored panel */}
+            <div className={styles.textPanel}>
+              <h2 className={styles.title}>{p.title}</h2>
+              {p.subTitle && <p className={styles.subtitle}>{p.subTitle}</p>}
+              <p className={styles.category}>{p.category || 'Product'}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT: empty for future */}
+        <div className={styles.colRight} aria-hidden="true" />
       </div>
     </section>
   );

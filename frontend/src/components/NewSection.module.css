@@ -1,11 +1,8 @@
 .section {
   position: relative;
   isolation: isolate;
-  background:
-    radial-gradient(1200px 600px at 80% 20%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%),
-    var(--sand, #D7D1C3);
+  background: var(--sand);
   color: var(--ink, #111);
-  padding-bottom: 72px;
   --accent: #F15921;
 }
 
@@ -28,28 +25,84 @@
   text-transform: uppercase;
   letter-spacing: .02em;
   line-height: 1;
-  font-size: 56px; /* fixed, no clamp */
+  font-size: 56px;
   display: inline-block;
 }
 
+/* --- 3-column container --- */
 .container {
-  max-width: 840px;
+  max-width: 1100px;
   margin: 0 auto;
   padding-inline: 16px;
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-  text-align: center;
+  display: grid;
+  grid-template-columns: 1fr;   /* stack by default */
+  gap: 24px;
+  align-items: start;
 }
 
-/* media (image centered) */
-.media { position: relative; }
-.art {
-  width: min(80vw, 560px); /* keep this responsive; set 560px if you want fully fixed */
-  height: auto;
+@media (min-width: 960px) {
+  .container {
+    grid-template-columns: 260px 560px 260px; /* left | center | right */
+    column-gap: 24px;
+    row-gap: 16px;
+  }
+}
+
+.colLeft  { grid-column: 1; justify-self: center; }
+.colCenter{ grid-column: 1; }
+.colRight { grid-column: 1; }
+
+@media (min-width: 960px) {
+  .colLeft  {
+    grid-column: 1;
+    align-self: stretch;       /* fill the row height */
+    display: flex;             /* enable centering within the column */
+    justify-content: center;   /* vertical center */
+    align-items: center;       /* horizontal center of the badges list */
+  }
+  .colCenter{ grid-column: 2; }
+  .colRight { grid-column: 3; }
+}
+
+/* LEFT: badges */
+.badges,
+.badgesPlaceholder {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.badges {
+  list-style: none;
+  display: flex;
+  flex-direction: column;   /* one per line */
+  gap: 12px;
+  align-items: center;      /* center the stack */
+}
+
+.badgesPlaceholder {
+  min-height: 12px; /* keeps grid tidy when no badges */
+}
+
+.badge {
   display: block;
+  width: 100%;
+  max-width: 240px;         /* tidy readable width */
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  padding: 20px 10px;
+  border-radius: 999px;
+}
+
+/* CENTER: image + text */
+.media { position: relative; text-align: center; }
+.art {
+  width: min(80vw, 560px);
+  height: auto;
+  display: inline-block;
   pointer-events: none;
   user-select: none;
   position: relative;
@@ -57,14 +110,23 @@
   filter: drop-shadow(0 12px 24px rgba(0,0,0,.20));
 }
 
-/* content under the image */
 .content {
   max-width: 65ch;
+  margin: 0 auto;
   text-transform: uppercase;
   font-family: var(--font-hand), ui-sans-serif, system-ui, sans-serif; /* Gaegu via --font-hand */
+  text-align: center;
 }
 
-/* headings & text (white on sand) */
+/* colored panel using backend color */
+.textPanel {
+  background: var(--accent);
+  color: #fff;
+  padding-top: 30px;
+  margin-top: 16px;
+}
+
+/* headings & text (white on accent panel) */
 .title {
   margin: 0;
   font-weight: 800;
@@ -75,7 +137,7 @@
 }
 
 .subtitle {
-  margin: 12px auto 0 auto;
+  margin: 12px 0 0 0;
   font-weight: 800;
   max-width: 60ch;
   opacity: .92;
@@ -84,32 +146,11 @@
   color: #fff;
 }
 
-/* category directly under subtitle */
 .category {
-  margin: 10px auto 0 auto;
+  margin: 10px 0 0 0;
   font-weight: 700;
   letter-spacing: .08em;
   color: #fff;
   opacity: .95;
   font-size: 32px;  /* same as .title */
-}
-
-/* diet badges pick up the accent color */
-.badges {
-  list-style: none;
-  margin: 16px 0 0 0;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.badge {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .06em;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 26%, #ffffff 0%);
-  border: 1px solid color-mix(in srgb, #000 12%, transparent);
 }
