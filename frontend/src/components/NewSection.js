@@ -1,13 +1,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './NewSection.module.css';
-import { getLatestProductLite, extractLatestProduct } from '@/lib/strapi';
+import { getNewSectionProduct, extractNewSectionProduct } from '@/lib/strapi';
 
 export default async function NewSection() {
-  const latest = await getLatestProductLite().catch(() => null);
-  if (!latest) return null;
+  const row = await getNewSectionProduct().catch(() => null);
+  if (!row) return null;
 
-  const p = extractLatestProduct(latest);
+  const p = extractNewSectionProduct(row);
   const flags = [
     p.diet.glutenFree && 'Gluten Free',
     p.diet.dairyFree && 'Dairy Free',
@@ -32,9 +32,7 @@ export default async function NewSection() {
         </div>
 
         <div className={styles.content}>
-          <p className={styles.kicker}>
-            New • {p.category || 'Product'}
-          </p>
+          <p className={styles.kicker}>New • {p.category || 'Product'}</p>
           <h2 className={styles.title}>{p.title}</h2>
           {p.subTitle && <p className={styles.subtitle}>{p.subTitle}</p>}
 
