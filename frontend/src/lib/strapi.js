@@ -219,21 +219,37 @@ export function extractFooter(res) {
 
 export function extractNavSection(homeRes) {
   const d  = homeRes?.data ?? {};
-  const ns = d.navSection ?? d.attributes?.navSection ?? {};
 
-  const toItem = (it) => {
-    const label = it?.label ?? it?.Label ?? '';
-    const url   = it?.url   ?? it?.Url   ?? '';
-    return { label, href: url || null };
+  // navSection can be flat (v5), nested in attributes (v4), or a relation with .data.attributes
+  const ns0 =
+    d.navSection ??
+    d.attributes?.navSection ??
+    d.attributes?.nav_section ?? // just in case of snake_case
+    {};
+
+  const ns = ns0?.data?.attributes ?? ns0; // unwrap relation if present
+
+  // helper: accept array or {data:[...]}
+  const arr = (x) => (Array.isArray(x) ? x : Array.isArray(x?.data) ? x.data : []);
+
+  // normalize each item regardless of v4/v5 or field names
+  const norm = (it) => {
+    const a = it?.attributes ?? it; // unwrap relation item
+    const label =
+      a?.label ?? a?.Label ?? a?.text ?? a?.Text ?? a?.title ?? a?.Title ?? '';
+    const href =
+      a?.url ?? a?.Url ?? a?.href ?? a?.Href ?? a?.link ?? a?.Link ?? '';
+    return { label: String(label || '').trim(), href: href || null };
   };
 
-  const leftSrc  = ns.leftItems  ?? ns.LeftItems  ?? [];
-  const rightSrc = ns.rightItems ?? ns.RightItems ?? [];
+  // tolerate multiple possible keys/casing
+  const leftSrc  = arr(ns.leftItems  ?? ns.LeftItems  ?? ns.left  ?? ns.Left);
+  const rightSrc = arr(ns.rightItems ?? ns.RightItems ?? ns.right ?? ns.Right);
 
-  const left  = Array.isArray(leftSrc)  ? leftSrc.map(toItem).filter(i => i.label)  : [];
-  const right = Array.isArray(rightSrc) ? rightSrc.map(toItem).filter(i => i.label) : [];
+  const left  = leftSrc.map(norm).filter((i) => i.label);
+  const right = rightSrc.map(norm).filter((i) => i.label);
 
-  const centerImg = bestMediaUrl(ns?.image) || null;
+  const centerImg = bestMediaUrl(ns.image ?? ns.Image) || null;
 
   return { left, right, centerImg };
 }
