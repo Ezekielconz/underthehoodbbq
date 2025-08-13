@@ -15,6 +15,19 @@ function saveCart(items) {
   localStorage.setItem(LS_KEY, JSON.stringify(items));
 }
 
+// helpers for badge + summary updates
+const cartCount = (arr) => arr.reduce((sum, it) => sum + (it.qty || 1), 0);
+const cartSubtotal = (arr) =>
+  arr.reduce((sum, it) => sum + (Number(it.price) || 0) * (it.qty || 1), 0);
+
+function broadcast(type, next) {
+  const detail = { items: next, count: cartCount(next), subtotal: cartSubtotal(next) };
+  // generic change event navbar listens to
+  window.dispatchEvent(new CustomEvent('cart:change', { detail }));
+  // specific event if you want to hook elsewhere
+  if (type) window.dispatchEvent(new CustomEvent(type, { detail }));
+}
+
 export default function CartPage() {
   const [items, setItems] = useState([]);
 
@@ -32,6 +45,7 @@ export default function CartPage() {
         if (idx >= 0) next[idx] = { ...next[idx], qty: (next[idx].qty || 1) + (incoming.qty || 1) };
         else next.push({ ...incoming, qty: incoming.qty || 1 });
         saveCart(next);
+        broadcast('cart:add', next);
         return next;
       });
     };
@@ -39,40 +53,40 @@ export default function CartPage() {
     return () => window.removeEventListener('cart:add', onAdd);
   }, []);
 
-  // helpers
+  // qty +/-
   const updateQty = useCallback((id, delta) => {
     setItems((prev) => {
       const next = prev.map((it) =>
         it.id === id ? { ...it, qty: Math.max(1, (it.qty || 1) + delta) } : it
       );
       saveCart(next);
+      broadcast('cart:update', next);
       return next;
     });
   }, []);
 
+  // remove single item
   const removeItem = useCallback((id) => {
     setItems((prev) => {
       const next = prev.filter((it) => it.id !== id);
       saveCart(next);
+      broadcast('cart:remove', next);
       return next;
     });
   }, []);
 
+  // clear all
   const clearCart = useCallback(() => {
     saveCart([]);
     setItems([]);
+    broadcast('cart:clear', []);
   }, []);
 
-  const subtotal = useMemo(
-    () => items.reduce((sum, it) => sum + (Number(it.price) || 0) * (it.qty || 1), 0),
-    [items]
-  );
-
+  const subtotal = useMemo(() => cartSubtotal(items), [items]);
   const fmt = useMemo(
     () => new Intl.NumberFormat('en-NZ', { style: 'currency', currency: 'NZD' }),
     []
   );
-
   const isEmpty = items.length === 0;
 
   return (
@@ -112,9 +126,7 @@ export default function CartPage() {
                     <div className={styles.itemInfo}>
                       <div className={styles.itemTop}>
                         <div className={styles.itemTitleRow}>
-                          <h3 className={styles.itemTitle}>
-                            {it.title || 'Product'}
-                          </h3>
+                          <h3 className={styles.itemTitle}>{it.title || 'Product'}</h3>
                           {it.colour ? (
                             <span
                               className={styles.swatch}
@@ -132,17 +144,9 @@ export default function CartPage() {
 
                       <div className={styles.itemBottom}>
                         <div className={styles.qtyControls} aria-label="Quantity controls">
-                          <button
-                            type="button"
-                            className={styles.qtyBtn}
-                            onClick={() => updateQty(it.id, -1)}
-                          >−</button>
+                          <button type="button" className={styles.qtyBtn} onClick={() => updateQty(it.id, -1)}>−</button>
                           <span className={styles.qty}>{it.qty || 1}</span>
-                          <button
-                            type="button"
-                            className={styles.qtyBtn}
-                            onClick={() => updateQty(it.id, +1)}
-                          >+</button>
+                          <button type="button" className={styles.qtyBtn} onClick={() => updateQty(it.id, +1)}>+</button>
                         </div>
 
                         <div className={styles.priceCol}>
@@ -153,11 +157,7 @@ export default function CartPage() {
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        className={styles.remove}
-                        onClick={() => removeItem(it.id)}
-                      >
+                      <button type="button" className={styles.remove} onClick={() => removeItem(it.id)}>
                         Remove
                       </button>
                     </div>
@@ -188,11 +188,7 @@ export default function CartPage() {
               </div>
 
               <div className={styles.coupon}>
-                <input
-                  className={styles.couponInput}
-                  placeholder="Discount code"
-                  aria-label="Discount code"
-                />
+                <input className={styles.couponInput} placeholder="Discount code" aria-label="Discount code" />
                 <button className={styles.couponBtn} type="button">Apply</button>
               </div>
 
@@ -201,11 +197,7 @@ export default function CartPage() {
                 <span className={styles.totalVal}>{fmt.format(subtotal)}</span>
               </div>
 
-              <button
-                className={styles.checkout}
-                type="button"
-                onClick={() => alert('Proceed to checkout flow')}
-              >
+              <button className={styles.checkout} type="button" onClick={() => alert('Proceed to checkout flow')}>
                 Checkout
               </button>
 
