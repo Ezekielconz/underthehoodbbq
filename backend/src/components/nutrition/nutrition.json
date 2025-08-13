@@ -13,7 +13,7 @@
       "type": "string"
     },
     "energy": {
-      "type": "integer"
+      "type": "decimal"
     },
     "protein": {
       "type": "decimal"

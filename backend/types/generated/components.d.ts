@@ -31,7 +31,7 @@ export interface NutritionNutrition extends Struct.ComponentSchema {
   };
   attributes: {
     carbs: Schema.Attribute.Decimal;
-    energy: Schema.Attribute.Integer;
+    energy: Schema.Attribute.Decimal;
     fat: Schema.Attribute.Decimal;
     notes: Schema.Attribute.Text;
     protein: Schema.Attribute.Decimal;
