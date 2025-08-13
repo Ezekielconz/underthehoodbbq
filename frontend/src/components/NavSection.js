@@ -3,116 +3,92 @@ import Link from 'next/link';
 import styles from './NavSection.module.css';
 import { getHome, extractNavSection } from '@/lib/strapi';
 
-function NavItem({ it, side }) {
-  if (it?.href) {
-    return (
-      <Link href={it.href} className={styles.link} data-side={side}>
-        {it.label}
-      </Link>
-    );
-  }
-  return (
-    <a
-      href=""
-      aria-disabled="true"
-      className={styles.link}
-      data-side={side}
-      style={{ pointerEvents: 'none', opacity: 0.9, textDecoration: 'none' }}
-    >
-      {it.label}
-    </a>
-  );
-}
+/** @typedef {{ href?: string, label: string }} NavItem */
 
-function NavList({ items = [], side }) {
-  return (
-    <ul className={`${styles.list} ${styles.col}`} data-side={side}>
-      {items.map((it, i) => (
-        <li key={`${side}-${i}`} className={styles.item}>
-          <NavItem it={it} side={side} />
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function Byline() {
-  return (
-    <div className={styles.byline} aria-label="With Dave and Michelle King">
-      <Image
-        src="/crown.svg"
-        alt=""
-        width={28}
-        height={28}
-        className={styles.crown}
-        aria-hidden="true"
-        priority={false}
-      />
-      <span className={styles.bylineNames}>Dave and Michelle King</span>
-    </div>
-  );
-}
-
-export function NavSectionView({ angle = -8, left = [], right = [], centerImg = null }) {
-  return (
-    <section
-      className={styles.section}
-      aria-label="Highlights navigation"
-      style={{ '--angle': `${angle}deg` }}
-    >
-      {/* Non-skewed orange underlay */}
-      <div className={styles.brandUnderlay} aria-hidden="true" />
-
-      {/* Byline pinned to the top of the first (skewed) orange band */}
-      <div className={styles.bylineAbs}>
-        <Byline />
-      </div>
-
-      {/* Skewed content ribbons */}
-      <div className={styles.ribbons}>
-        <div className={styles.columns}>
-          <NavList items={left} side="left" />
-
-          <div className={styles.center}>
-            {centerImg && (
-              <Image
-                src={centerImg}
-                alt=""
-                width={420}
-                height={420}
-                className={styles.centerImg}
-                priority
-              />
-            )}
-          </div>
-
-          <NavList items={right} side="right" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export default async function NavSection(props) {
-  const angle = props?.angle ?? -8;
-
-  let leftCMS = [];
-  let rightCMS = [];
-  let centerImgCMS = null;
+export default async function NavSection({ brandText = 'Dave and Michelle King' } = {}) {
+  /** @type {NavItem[]} */
+  let left = [];
+  /** @type {NavItem[]} */
+  let right = [];
+  /** @type {string|null} */
+  let centerImg = null;
 
   try {
     const home = await getHome();
-    const data = extractNavSection(home);
-    leftCMS = data.left || [];
-    rightCMS = data.right || [];
-    centerImgCMS = data.centerImg || null;
+    const data = extractNavSection(home) || {};
+    left = Array.isArray(data.left) ? data.left : [];
+    right = Array.isArray(data.right) ? data.right : [];
+    centerImg = data.centerImg || null;
   } catch (e) {
     console.error('NavSection fetch failed:', e);
   }
 
-  const left = Array.isArray(props?.left) && props.left.length ? props.left : leftCMS;
-  const right = Array.isArray(props?.right) && props.right.length ? props.right : rightCMS;
-  const centerImg = props?.centerImg ?? centerImgCMS;
+  if (!left.length && !right.length && !centerImg && !brandText) return null;
 
-  return <NavSectionView angle={angle} left={left} right={right} centerImg={centerImg} />;
+  const renderItem = (it, key) => (
+    <li key={key} className={styles.item}>
+      {it && it.href ? (
+        <Link href={it.href} className={styles.link}>
+          {it.label}
+        </Link>
+      ) : (
+        <span className={styles.link}>{it?.label}</span>
+      )}
+    </li>
+  );
+
+  return (
+    <section aria-label="Navigation" className={styles.section}>
+      <div className={styles.grid}>
+        <div className={styles.left}>
+          <ul className={styles.list}>{left.map((it, i) => renderItem(it, `left-${i}`))}</ul>
+        </div>
+
+        {/* center column intentionally empty (image overlays from brand strip) */}
+        <div className={styles.center} aria-hidden="true" />
+
+        <div className={styles.right}>
+          <ul className={styles.list}>{right.map((it, i) => renderItem(it, `right-${i}`))}</ul>
+        </div>
+      </div>
+
+      {brandText ? (
+        <div className={styles.brandBlock}>
+          <div className={styles.brandInner}>
+            {/* Absolutely-positioned overlay so it doesn't add height */}
+            {centerImg && (
+              <div className={styles.brandImageOverlay} aria-hidden="true">
+                <Image
+                  src={centerImg}
+                  alt=""
+                  width={600}
+                  height={600}
+                  className={styles.brandImage}
+                  priority
+                />
+              </div>
+            )}
+
+            <div className={styles.brandGrid}>
+              <div className={styles.brandLeft} />
+              <div className={styles.brandCenter} aria-hidden="true" />
+              <div className={styles.brandRight}>
+                <span className={styles.brandRightInner}>
+                  <Image
+                    src="/crown.svg"
+                    alt=""
+                    width={28}
+                    height={28}
+                    className={styles.brandIcon}
+                    aria-hidden="true"
+                  />
+                  <span className={styles.brandText}>{brandText}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
 }
