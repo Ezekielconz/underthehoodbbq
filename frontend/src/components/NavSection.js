@@ -6,12 +6,9 @@ import { getHome, extractNavSection } from '@/lib/strapi';
 /** @typedef {{ href?: string, label: string }} NavItem */
 
 export default async function NavSection({ brandText = 'Dave and Michelle King' } = {}) {
-  /** @type {NavItem[]} */
-  let left = [];
-  /** @type {NavItem[]} */
-  let right = [];
-  /** @type {string|null} */
-  let centerImg = null;
+  /** @type {NavItem[]} */ let left = [];
+  /** @type {NavItem[]} */ let right = [];
+  /** @type {string|null} */ let centerImg = null;
 
   try {
     const home = await getHome();
@@ -28,9 +25,7 @@ export default async function NavSection({ brandText = 'Dave and Michelle King' 
   const renderItem = (it, key) => (
     <li key={key} className={styles.item}>
       {it && it.href ? (
-        <Link href={it.href} className={styles.link}>
-          {it.label}
-        </Link>
+        <Link href={it.href} className={styles.link}>{it.label}</Link>
       ) : (
         <span className={styles.link}>{it?.label}</span>
       )}
@@ -44,7 +39,6 @@ export default async function NavSection({ brandText = 'Dave and Michelle King' 
           <ul className={styles.list}>{left.map((it, i) => renderItem(it, `left-${i}`))}</ul>
         </div>
 
-        {/* center column intentionally empty (image overlays from brand strip) */}
         <div className={styles.center} aria-hidden="true" />
 
         <div className={styles.right}>
@@ -55,7 +49,6 @@ export default async function NavSection({ brandText = 'Dave and Michelle King' 
       {brandText ? (
         <div className={styles.brandBlock}>
           <div className={styles.brandInner}>
-            {/* Absolutely-positioned overlay so it doesn't add height */}
             {centerImg && (
               <div className={styles.brandImageOverlay} aria-hidden="true">
                 <Image

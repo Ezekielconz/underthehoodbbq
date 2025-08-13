@@ -1,37 +1,42 @@
 .section {
-  /* controls */
   --skew-angle: -8deg;
   --skew-angle-inverse: 8deg;
-
-  /* image sizing + lift (overlaps upward into the sand area) */
+  --brand-text-angle: -8deg;
   --img-height: 520px;
   --img-lift: 10px;
+  --right-nudge: 120px;
+
+  /* hover animation + shadow controls */
+  --link-shift: 8px;
+  --link-rise: 3px;
+  --link-duration: 280ms;
+  --link-shadow-1: 0 8px 16px rgba(0,0,0,.25);
+  --link-shadow-2: 0 2px 4px rgba(0,0,0,.20);
 
   background: var(--sand);
   color: #ffffff;
   transform: skewY(var(--skew-angle));
   transform-origin: center;
-  padding: 50px 0 0;     /* extra padding so corners don’t clip */
+  padding: 50px 0 0;
   overflow: visible;
   position: relative;
 }
 
-/* main 3-column content (links only now) */
 .grid {
-  position: relative; 
+  position: relative;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   gap: 20px;
   align-items: start;
-  max-width: 1100px;
+  max-width: 2000px;
   margin: 0 auto;
   padding: 0 16px;
-  z-index: 1;           /* sits below the brand image we’ll lift above */
+  z-index: 1;
 }
 
-/* place the lists into the outer tracks */
 .left  { grid-column: 1; text-align: right; }
-.right { grid-column: 3; text-align: left; }
+.right { grid-column: 3; text-align: left; padding-left: var(--right-nudge); }
+.right .list { align-items: flex-start; }
 
 .list {
   list-style: none;
@@ -44,47 +49,86 @@
 .item { margin: 0; }
 
 .link {
+  position: relative;
+  display: inline-block;
   text-decoration: none;
   color: inherit;
   text-transform: uppercase;
   font-weight: 700;
   line-height: 0.2;
-  font-size: 82px;        /* desktop */
+  font-size: 82px;
+  padding: 4px 0;
+
+  transition:
+    transform var(--link-duration) cubic-bezier(.2,.8,.2,1),
+    letter-spacing var(--link-duration) ease,
+    color var(--link-duration) ease,
+    text-shadow var(--link-duration) ease;
+  will-change: transform;
 }
 
-/* ---------- brand strip below (image overlaps upward) ---------- */
+/* Hover/focus: subtle rise + side-specific slide + drop shadow */
+.left .link:hover,
+.left .link:focus-visible {
+  transform: translate(-var(--link-shift), calc(-1 * var(--link-rise)));
+  letter-spacing: 0.01em;
+  text-shadow: var(--link-shadow-1), var(--link-shadow-2);
+}
+.right .link:hover,
+.right .link:focus-visible {
+  transform: translate(var(--link-shift), calc(-1 * var(--link-rise)));
+  letter-spacing: 0.01em;
+  text-shadow: var(--link-shadow-1), var(--link-shadow-2);
+}
+
+/* Accessible focus ring */
+.link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 6px;
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .link { transition: color var(--link-duration) ease, text-shadow var(--link-duration) ease; }
+  .left .link:hover,
+  .left .link:focus-visible,
+  .right .link:hover,
+  .right .link:focus-visible {
+    transform: none;
+    letter-spacing: normal;
+  }
+}
+
 .brandBlock {
   background: var(--brand);
   color: var(--ink);
   margin-top: 36px;
-  padding: 22px 0 0;      /* keep the strip shallow */
+  padding: 22px 0 0;
   position: relative;
-  z-index: 2;             /* above the links so the image can overlap them */
-  overflow: visible;      /* ensure lifted image isn’t clipped */
+  z-index: 2;
+  overflow: visible;
 }
 
 .brandInner {
   max-width: 1100px;
   margin: 0 auto;
   padding: 0 16px;
-  position: relative;     /* anchor for absolute overlay */
+  position: relative;
   overflow: visible;
 }
 
-/* 3 columns: left | center spacer | right (name) */
 .brandGrid {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   gap: 20px;
   align-items: center;
-  min-height: 64px;       /* keeps the brand strip compact */
+  min-height: 64px;
 }
 
 .brandLeft  { text-align: left; }
 .brandCenter{ text-align: center; position: relative; }
 .brandRight { text-align: right; }
 
-/* Brand name stays upright */
 .brandRightInner {
   display: inline-flex;
   align-items: center;
@@ -102,14 +146,13 @@
   font-size: 24px;
 }
 
-/* Absolutely-positioned overlayed image (doesn't affect strip height) */
 .brandImageOverlay {
   position: absolute;
-  bottom: 0;                     /* anchor to bottom of brand strip */
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%) skewY(var(--skew-angle-inverse));
-  z-index: 3;                    /* above everything in this section */
-  pointer-events: none;          /* don’t block link clicks below */
+  z-index: 3;
+  pointer-events: none;
 }
 
 .brandImage {
@@ -117,14 +160,13 @@
   width: auto;
   height: var(--img-height);
   object-fit: contain;
-  transform: translateY(calc(-1 * var(--img-lift))); /* lift upward into sand area */
+  transform: translateY(calc(-1 * var(--img-lift)));
   filter: drop-shadow(0 12px 24px rgba(0,0,0,.2));
 }
 
-/* --------- responsive tweaks --------- */
 @media (max-width: 1024px) {
   .link { font-size: 34px; }
-  .section { --img-height: 260px; --img-lift: 90px; }
+  .section { --img-height: 260px; --img-lift: 90px; --right-nudge: 16px; --link-shift: 6px; }
 }
 
 @media (max-width: 720px) {
@@ -133,8 +175,16 @@
     gap: 14px;
   }
   .left, .right { grid-column: 1; text-align: center; }
+  .right { padding-left: 0; }
+  .right .list { align-items: center; }
 
   .link { font-size: 22px; }
+  .left .link:hover,
+  .left .link:focus-visible,
+  .right .link:hover,
+  .right .link:focus-visible {
+    transform: translateY(calc(-1 * var(--link-rise)));
+  }
 
   .brandGrid {
     grid-template-columns: 1fr;
