@@ -1,14 +1,20 @@
-const STRAPI_URL = process.env.STRAPI_URL;
-const STRAPI_TOKEN = process.env.STRAPI_TOKEN;
+const STRAPI_URL = (process.env.STRAPI_URL || '').replace(/\/$/, '');
+const STRAPI_TOKEN = process.env.STRAPI_TOKEN || '';
 
 export function mediaURL(url) {
   if (!url) return '';
   return url.startsWith('http') ? url : `${STRAPI_URL}${url}`;
 }
 
+/**
+ * Pick the best URL from a Strapi media object (v4/v5, with or without .data)
+ * Accepts:
+ *  - { url, formats? }
+ *  - { data: { attributes: { url, formats? } } }
+ */
 function bestMediaUrl(mediaLike) {
   if (!mediaLike) return null;
-  const m = mediaLike?.data?.attributes || mediaLike;
+  const m = mediaLike?.data?.attributes || mediaLike?.attributes || mediaLike;
   if (!m) return null;
 
   const formats = m.formats || {};
@@ -18,6 +24,16 @@ function bestMediaUrl(mediaLike) {
   }
   const url = (best?.url || m.url) || null;
   return url ? mediaURL(url) : null;
+}
+
+/** Get the best image from a "multiple media" field that may be an array or {data: []} */
+function firstImageUrlFrom(images) {
+  if (!images) return null;
+  const arr = Array.isArray(images?.data)
+    ? images.data
+    : (Array.isArray(images) ? images : []);
+  if (arr.length) return bestMediaUrl(arr[0]);
+  return bestMediaUrl(images);
 }
 
 function toQuery(params = {}) {
@@ -54,29 +70,98 @@ export async function strapiFetch(path, params = {}, fetchOptions = {}) {
   return res.json();
 }
 
+/* -----------------------------------------------------------------------------
+ * Product helpers
+ * ---------------------------------------------------------------------------*/
+
+function normalizeNutrition(nArr) {
+  const arr = Array.isArray(nArr) ? nArr : [];
+  return arr.map((n) => ({
+    servingPerPacket: n?.servingPerPacket ?? null,
+    servingSize: n?.servingSize || '',
+    energy: n?.energy ?? null,
+    protein: n?.protein ?? null,
+    fat: n?.fat ?? null,
+    saturated: n?.saturated ?? null,
+    carbs: n?.carbs ?? null,
+    sugars: n?.sugars ?? null,
+    sodiums: n?.sodiums ?? null,
+    notes: n?.notes || '',
+  }));
+}
+
+function normalizeProduct(node) {
+  if (!node) return null;
+  const id = node.id ?? node.documentId ?? null;
+  const a = node.attributes || node;
+
+  return {
+    id,
+    title: a.title || '',
+    subTitle: a.subTitle || a.subtitle || '',
+    slug: a.slug || '',
+    description: a.description || '',
+    price: a.price ?? null,
+    image: firstImageUrlFrom(a.images) || bestMediaUrl(a.art) || null,
+
+    // extra fields
+    category: a?.category?.data?.attributes?.name || a?.category?.name || '',
+    ingredients: a?.ingredients || '',
+    nutrition: normalizeNutrition(a?.nutrition),
+    colour: a?.colour || '',        // ✅ added
+  };
+}
+
+export function extractProducts(res) {
+  const list = res?.data ?? (Array.isArray(res) ? res : []);
+  return list.map(normalizeProduct).filter(Boolean);
+}
+
 export async function getProducts() {
-  return strapiFetch('/products', {
+  const data = await strapiFetch('/products', {
     'populate[0]': 'images',
-    'populate[1]': 'category',
+    'populate[1]': 'art',
+    'populate[2]': 'category',
+    'populate[3]': 'nutrition',          // components must be populated
+
+    // top-level fields only
     'fields[0]': 'title',
-    'fields[1]': 'slug',
-    'fields[2]': 'price',
-    'fields[3]': 'description',
+    'fields[1]': 'subTitle',
+    'fields[2]': 'slug',
+    'fields[3]': 'price',
+    'fields[4]': 'description',
+    'fields[5]': 'ingredients',
+    'fields[6]': 'colour',               // ✅ include colour
+
     'sort[0]': 'title:asc',
     publicationState: 'live',
     'pagination[pageSize]': 100,
   });
+  return extractProducts(data);
 }
 
 export async function getProductBySlug(slug) {
   const data = await strapiFetch('/products', {
     'filters[slug][$eq]': slug,
     'populate[0]': 'images',
-    'populate[1]': 'category',
+    'populate[1]': 'art',
+    'populate[2]': 'category',
+    'populate[3]': 'nutrition',
+
+    // top-level fields only
+    'fields[0]': 'title',
+    'fields[1]': 'subTitle',
+    'fields[2]': 'slug',
+    'fields[3]': 'price',
+    'fields[4]': 'description',
+    'fields[5]': 'ingredients',
+    'fields[6]': 'colour',               // ✅ include colour
+
     publicationState: 'live',
     'pagination[pageSize]': 1,
   });
-  return data?.data?.[0] || null;
+  const raw = data?.data?.[0] || null;
+  return raw ? normalizeProduct(raw) : null;
 }
 
 export async function getCategories() {
@@ -118,29 +203,26 @@ export function extractGlobals(res) {
   };
 }
 
+/* -----------------------------------------------------------------------------
+ * Home + Nav Section helpers
+ * ---------------------------------------------------------------------------*/
+
 export async function getHome() {
   return strapiFetch(
     '/home',
     {
-      // media at root
       'populate[0]': 'heroTitle',
       'populate[1]': 'heroGraphic',
-
-      // component + nested bits (dot-notation)
       'populate[2]': 'navSection',
       'populate[3]': 'navSection.leftItems',
       'populate[4]': 'navSection.rightItems',
       'populate[5]': 'navSection.image',
-      // ⚠️ DO NOT populate the relation inside the component; it triggers a 400:
-      // 'populate[6]': 'navSection.product',
-
       ...(process.env.NODE_ENV !== 'production' ? { publicationState: 'preview' } : {}),
     },
     { next: { revalidate: 0 } }
   );
 }
 
-// Normalize item: either direct fields or { attributes: { ... } } or { data:{attributes:{...}} }
 function _pluckItem(it) {
   if (!it) return null;
   const a = it?.attributes || it?.data?.attributes || it;
@@ -200,40 +282,11 @@ export function extractFooter(res) {
   };
 }
 
-export function extractNavSection(homeRes) {
-  const ns =
-    homeRes?.data?.navSection ??
-    homeRes?.data?.attributes?.navSection ??
-    {};
-
-  // Cope with variations: leftItems vs leftitems, optional .data arrays
-  const leftRaw =
-    (Array.isArray(ns.leftItems) && ns.leftItems) ||
-    (Array.isArray(ns.leftitems) && ns.leftitems) ||
-    (Array.isArray(ns?.leftItems?.data) && ns.leftItems.data) ||
-    [];
-  const rightRaw =
-    (Array.isArray(ns.rightItems) && ns.rightItems) ||
-    (Array.isArray(ns.rightitems) && ns.rightitems) ||
-    (Array.isArray(ns?.rightItems?.data) && ns.rightItems.data) ||
-    [];
-
-  const left  = leftRaw.map(_pluckItem).filter(Boolean);
-  const right = rightRaw.map(_pluckItem).filter(Boolean);
-
-  const centerImg = bestMediaUrl(ns.image) || null;
-
-  return { left, right, centerImg };
-}
-
-/* ---------------------------------------------------------------------------------------
- * NewSection helpers
- * - Prefer product selected on Home.navSection.product
- * - Fallback to latest product
- * -------------------------------------------------------------------------------------*/
+/* -----------------------------------------------------------------------------
+ * NewSection (homepage featured product) helpers
+ * ---------------------------------------------------------------------------*/
 
 function extractSelectedProductIdFromHome(homeRes) {
-  // Supports v4/v5 + flattened/attributes shapes
   const root = homeRes?.data || {};
   const ns =
     root.navSection ??
@@ -241,7 +294,6 @@ function extractSelectedProductIdFromHome(homeRes) {
     {};
   const prod = ns?.product;
 
-  // could be { id|documentId } or { data:{ id|documentId } } or even a plain number id
   const id =
     prod?.id ??
     prod?.data?.id ??
@@ -258,7 +310,6 @@ function extractSelectedProductIdFromHome(homeRes) {
 export async function getNewSectionProduct() {
   const isDev = process.env.NODE_ENV !== 'production';
 
-  // Try to read selected product identifier from Home
   const home = await getHome().catch(() => null);
   const selected = extractSelectedProductIdFromHome(home);
 
@@ -285,7 +336,6 @@ export async function getNewSectionProduct() {
     params['sort[0]'] = 'createdAt:desc';
   }
 
-  // disable caching while you wire this up
   const res = await strapiFetch('/products', params, { next: { revalidate: 0 } });
   return res?.data?.[0] || null;
 }
@@ -306,4 +356,30 @@ export function extractNewSectionProduct(p) {
     },
     art: a.art ? (a.art.data ? bestMediaUrl(a.art) : bestMediaUrl(a.art)) : null,
   };
+}
+
+export function extractNavSection(homeRes) {
+  const ns =
+    homeRes?.data?.navSection ??
+    homeRes?.data?.attributes?.navSection ??
+    {};
+
+  // Cope with variations: leftItems vs leftitems, optional .data arrays
+  const leftRaw =
+    (Array.isArray(ns.leftItems) && ns.leftItems) ||
+    (Array.isArray(ns.leftitems) && ns.leftitems) ||
+    (Array.isArray(ns?.leftItems?.data) && ns.leftItems.data) ||
+    [];
+  const rightRaw =
+    (Array.isArray(ns.rightItems) && ns.rightItems) ||
+    (Array.isArray(ns.rightitems) && ns.rightitems) ||
+    (Array.isArray(ns?.rightItems?.data) && ns.rightItems.data) ||
+    [];
+
+  const left  = leftRaw.map(_pluckItem).filter(Boolean);
+  const right = rightRaw.map(_pluckItem).filter(Boolean);
+
+  const centerImg = bestMediaUrl(ns.image) || null;
+
+  return { left, right, centerImg };
 }

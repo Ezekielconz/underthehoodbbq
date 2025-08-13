@@ -1,0 +1,147 @@
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  min-height: 80vh;
+  min-height: 80svh;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 0.8fr; /* image | details | picker */
+  gap: 24px;
+  align-items: stretch;
+  min-height: inherit;
+}
+
+.colImage {}
+.colDetails {
+  display: flex;
+  flex-direction: column;
+}
+.colPicker {}
+
+.detailsMain {}
+
+.detailsMeta {
+  margin-top: auto;
+  padding: 16px;
+  background: var(--meta-bg, #181617);
+  color: var(--meta-fg, #fff);
+  text-align: center;
+
+  /* letter-spacing controls */
+  --ls-title: -0.01em;
+  --ls-sub:   -0.03em;
+  --ls-cat:   -0.03em;
+}
+
+/* keep uppercase, but move spacing to per-element rules below */
+.detailsMeta .title,
+.detailsMeta .subTitle,
+.detailsMeta .category {
+  text-transform: uppercase;
+}
+
+/* bottom meta text */
+.title {
+  margin: 0;
+  font-weight: 800;
+  font-size: 32px;          /* same as .category */
+  line-height: 1.1;
+  color: #fff;
+  opacity: 0.7;             /* 70% */
+  letter-spacing: var(--ls-title);
+}
+.subTitle {
+  margin: 12px 0 0 0;
+  font-weight: 800;
+  max-width: 60ch;
+  font-size: 82px;
+  line-height: 0.3;
+  color: #fff;
+  letter-spacing: var(--ls-sub);
+}
+.category {
+  margin: 10px 0 0 0;
+  font-weight: 700;
+  color: #fff;
+  font-size: 32px;          /* same as .title */
+  opacity: 0.7;             /* 70% */
+  letter-spacing: var(--ls-cat);
+}
+
+/* rest of details */
+.price { font-weight: 700; margin: 0 0 12px; }
+.description { margin: 0; }
+.ingredients { margin: 12px 0; }
+
+/* colour row (in main content) */
+.colour {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 12px;
+  color: #666;
+}
+.colourSwatch {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  display: inline-block;
+}
+.colourValue { font-variant-numeric: tabular-nums; }
+
+.nutrition { margin-top: 16px; }
+.nutritionTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+.nutritionCaption {
+  text-align: left;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.nutritionTable th,
+.nutritionTable td {
+  padding: 6px 8px;
+  border: 1px solid #e5e5e5;
+}
+.nLabel { width: 40%; text-align: left; }
+.nValue { width: 60%; text-align: right; }
+.nNotes { padding: 8px; font-style: italic; color: #555; }
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.item,
+.itemActive {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+.itemActive {
+  border-color: #111;
+  background: #fafafa;
+}
+
+@media (max-width: 960px) {
+  .grid { grid-template-columns: 1fr; }
+  .detailsMeta { padding: 12px;
+
+    /* tighten tracking a touch on small screens */
+    --ls-title: 0.06em;
+    --ls-sub:   0.08em;
+    --ls-cat:   0.06em;
+  }
+}
