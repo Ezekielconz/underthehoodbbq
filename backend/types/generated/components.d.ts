@@ -11,18 +11,6 @@ export interface LinkitemLinkItem extends Struct.ComponentSchema {
   };
 }
 
-export interface NavsectionNavSection extends Struct.ComponentSchema {
-  collectionName: 'components_navsection_nav_sections';
-  info: {
-    displayName: 'NavSection';
-  };
-  attributes: {
-    image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    leftItems: Schema.Attribute.Component<'linkitem.link-item', true>;
-    rightItems: Schema.Attribute.Component<'linkitem.link-item', true>;
-  };
-}
-
 export interface NutritionNutrition extends Struct.ComponentSchema {
   collectionName: 'components_nutrition_nutritions';
   info: {
@@ -59,7 +47,6 @@ declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
       'linkitem.link-item': LinkitemLinkItem;
-      'navsection.nav-section': NavsectionNavSection;
       'nutrition.nutrition': NutritionNutrition;
       'sociallinks.social-links': SociallinksSocialLinks;
     }

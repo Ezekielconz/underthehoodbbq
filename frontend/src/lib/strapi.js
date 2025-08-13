@@ -108,7 +108,7 @@ function normalizeProduct(node) {
     category: a?.category?.data?.attributes?.name || a?.category?.name || '',
     ingredients: a?.ingredients || '',
     nutrition: normalizeNutrition(a?.nutrition),
-    colour: a?.colour || '',        // ✅ added
+    colour: a?.colour || '',
   };
 }
 
@@ -131,7 +131,7 @@ export async function getProducts() {
     'fields[3]': 'price',
     'fields[4]': 'description',
     'fields[5]': 'ingredients',
-    'fields[6]': 'colour',               // ✅ include colour
+    'fields[6]': 'colour',
 
     'sort[0]': 'title:asc',
     publicationState: 'live',
@@ -155,7 +155,7 @@ export async function getProductBySlug(slug) {
     'fields[3]': 'price',
     'fields[4]': 'description',
     'fields[5]': 'ingredients',
-    'fields[6]': 'colour',               // ✅ include colour
+    'fields[6]': 'colour',
 
     publicationState: 'live',
     'pagination[pageSize]': 1,
@@ -204,19 +204,18 @@ export function extractGlobals(res) {
 }
 
 /* -----------------------------------------------------------------------------
- * Home + Nav Section helpers
+ * Home + Nav Section helpers (hero removed)
  * ---------------------------------------------------------------------------*/
 
 export async function getHome() {
   return strapiFetch(
     '/home',
     {
-      'populate[0]': 'heroTitle',
-      'populate[1]': 'heroGraphic',
-      'populate[2]': 'navSection',
-      'populate[3]': 'navSection.leftItems',
-      'populate[4]': 'navSection.rightItems',
-      'populate[5]': 'navSection.image',
+      // Only navSection and its subfields now
+      'populate[0]': 'navSection',
+      'populate[1]': 'navSection.leftItems',
+      'populate[2]': 'navSection.rightItems',
+      'populate[3]': 'navSection.image',
       ...(process.env.NODE_ENV !== 'production' ? { publicationState: 'preview' } : {}),
     },
     { next: { revalidate: 0 } }
@@ -230,25 +229,6 @@ function _pluckItem(it) {
   const url = a?.url ?? null;
   if (!label) return null;
   return { label, href: url || null };
-}
-
-export function extractHomeHero(homeRes) {
-  const d = homeRes?.data || {};
-  const heroTitle   = d?.heroTitle   ?? d?.attributes?.heroTitle   ?? null;
-  const heroGraphic = d?.heroGraphic ?? d?.attributes?.heroGraphic ?? null;
-
-  const titleImg   = bestMediaUrl(heroTitle);
-  const graphicImg =
-    Array.isArray(heroGraphic) ? bestMediaUrl(heroGraphic[0]) : bestMediaUrl(heroGraphic);
-
-  return {
-    titleImg: titleImg || null,
-    graphicImg: graphicImg || null,
-    primaryText:   d?.button1Text ?? d?.attributes?.button1Text ?? 'Shop Now',
-    primaryUrl:    d?.button1Url  ?? d?.attributes?.button1Url  ?? '/shop',
-    secondaryText: d?.button2Text ?? d?.attributes?.button2Text ?? 'BBQ Services',
-    secondaryUrl:  d?.button2Url  ?? d?.attributes?.button2Url  ?? '/bbqservices',
-  };
 }
 
 export async function getFooter() {

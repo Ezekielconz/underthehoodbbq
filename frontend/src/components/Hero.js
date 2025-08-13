@@ -1,55 +1,37 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './Hero.module.css';
-import { getHome, extractHomeHero, getGlobal, extractLogo } from '@/lib/strapi';
 
-export default async function Hero() {
-  let hero = {
-    titleImg: null,
-    graphicImg: null,
-    primaryText: 'Shop Now',
-    primaryUrl: '/shop',
-    secondaryText: 'BBQ Services',
-    secondaryUrl: '/bbqservices',
-  };
+// Locked-down hero config (no CMS)
+const HERO = {
+  titleImg: '/images/logo2.svg',  // public/images/logo2.svg
+  graphicImg: '/images/bbq.svg',  // public/images/bbq.svg
+  primary:   { label: 'Shop Now',      href: '/shop' },
+  // I assumed this URL; change if yours differs
+  secondary: { label: 'Masterclasses', href: '/bbqservices' },
+};
 
-  try {
-    const [homeRes, globalRes] = await Promise.all([
-      getHome().catch(() => null),
-      getGlobal().catch(() => null),
-    ]);
-    if (homeRes) hero = { ...hero, ...extractHomeHero(homeRes) };
-    if (!hero.titleImg && globalRes) {
-      const logo = extractLogo(globalRes);
-      if (logo?.url) hero.titleImg = logo.url;
-    }
-  } catch {}
-
+export default function Hero() {
   return (
-    <section className={styles.section}>
+    <section className={styles.section} aria-labelledby="hero-heading">
       <div className={styles.container}>
         <div className={styles.grid}>
           {/* LEFT */}
           <div className={styles.left}>
-            {hero.titleImg ? (
-              <Image
-                src={hero.titleImg}
-                alt="Under The Hood BBQ"
-                width={720}
-                height={300}
-                priority
-                className={styles.titleImg}
-              />
-            ) : (
-              <h1 className={styles.heading}>Under The Hood BBQ</h1>
-            )}
-
+            <Image
+              src={HERO.titleImg}
+              alt="Under The Hood BBQ"
+              width={720}
+              height={300}
+              priority
+              className={styles.titleImg}
+            />
             <div className={styles.ctas}>
-              <Link href={hero.primaryUrl} className={`${styles.btn} ${styles.primary}`}>
-                {hero.primaryText}
+              <Link href={HERO.primary.href} className={`${styles.btn} ${styles.primary}`}>
+                {HERO.primary.label}
               </Link>
-              <Link href={hero.secondaryUrl} className={`${styles.btn} ${styles.secondary}`}>
-                {hero.secondaryText}
+              <Link href={HERO.secondary.href} className={`${styles.btn} ${styles.secondary}`}>
+                {HERO.secondary.label}
               </Link>
             </div>
           </div>
@@ -57,8 +39,8 @@ export default async function Hero() {
           {/* RIGHT – graphic overlaps next section */}
           <div className={styles.right}>
             <Image
-              src={hero.graphicImg || '/hero.svg'}
-              alt=""
+              src={HERO.graphicImg}
+              alt=""                 // decorative
               width={720}
               height={720}
               priority

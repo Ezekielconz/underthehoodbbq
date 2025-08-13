@@ -11,43 +11,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "heroTitle": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
-    },
-    "heroGraphic": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
-    },
-    "button1Text": {
-      "type": "string"
-    },
-    "button1Url": {
-      "type": "string"
-    },
-    "button2Text": {
-      "type": "string"
-    },
-    "button2Url": {
-      "type": "string"
-    },
-    "navSection": {
-      "type": "component",
-      "component": "navsection.nav-section",
-      "repeatable": false
-    },
     "product": {
       "type": "relation",
       "relation": "oneToOne",

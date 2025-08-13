@@ -513,21 +513,12 @@ export interface ApiHomeHome extends Struct.SingleTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    button1Text: Schema.Attribute.String;
-    button1Url: Schema.Attribute.String;
-    button2Text: Schema.Attribute.String;
-    button2Url: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    heroGraphic: Schema.Attribute.Media<
-      'images' | 'files' | 'videos' | 'audios'
-    >;
-    heroTitle: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::home.home'> &
       Schema.Attribute.Private;
-    navSection: Schema.Attribute.Component<'navsection.nav-section', false>;
     product: Schema.Attribute.Relation<'oneToOne', 'api::product.product'>;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
