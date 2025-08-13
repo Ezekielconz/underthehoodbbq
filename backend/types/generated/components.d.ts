@@ -1,16 +1,5 @@
 import type { Schema, Struct } from '@strapi/strapi';
 
-export interface LinkitemLinkItem extends Struct.ComponentSchema {
-  collectionName: 'components_linkitem_link_items';
-  info: {
-    displayName: 'LinkItem';
-  };
-  attributes: {
-    label: Schema.Attribute.String;
-    url: Schema.Attribute.String;
-  };
-}
-
 export interface NutritionNutrition extends Struct.ComponentSchema {
   collectionName: 'components_nutrition_nutritions';
   info: {
@@ -46,7 +35,6 @@ export interface SociallinksSocialLinks extends Struct.ComponentSchema {
 declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
-      'linkitem.link-item': LinkitemLinkItem;
       'nutrition.nutrition': NutritionNutrition;
       'sociallinks.social-links': SociallinksSocialLinks;
     }
