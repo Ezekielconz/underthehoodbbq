@@ -50,92 +50,101 @@ export default function ShopPageClient({ products = [] }) {
   }
 
   return (
-    <div className={styles.grid}>
-      <div className={styles.colImage}>
-        {current?.image ? (
-          <Image
-            src={current.image}
-            alt={current.title || 'Product image'}
-            width={800}
-            height={800}
-            className={styles.image}
-            priority
-          />
-        ) : (
-          <div className={styles.imageFallback}>No image</div>
-        )}
-      </div>
+    <div className={styles.pageRoot}>
+      <div className={styles.page}>
+        <div className={styles.grid}>
+          {/* LEFT: Image */}
+          <div className={styles.colImage}>
+            {current?.image ? (
+              <Image
+                src={current.image}
+                alt={current.title || 'Product image'}
+                width={800}
+                height={800}
+                className={styles.image}
+                priority
+              />
+            ) : (
+              <div className={styles.imageFallback}>No image</div>
+            )}
+          </div>
 
-      <div className={styles.colDetails}>
-        <div className={styles.detailsMain}>
+          {/* MIDDLE: Details */}
+          <div className={styles.colDetails}>
+            <div className={styles.detailsMain}>
+              {current?.price != null ? <p className={styles.price}>${current.price}</p> : null}
 
-          {current?.price != null ? <p className={styles.price}>${current.price}</p> : null}
+              {current?.description ? (
+                <p className={styles.description}>{current.description}</p>
+              ) : null}
 
-          {current?.description ? <p className={styles.description}>{current.description}</p> : null}
+              {current?.ingredients ? (
+                <p className={styles.ingredients}>
+                  <strong>Ingredients:</strong> {current.ingredients}
+                </p>
+              ) : null}
 
-          {current?.ingredients ? (
-            <p className={styles.ingredients}>
-              <strong>Ingredients:</strong> {current.ingredients}
-            </p>
-          ) : null}
-
-          {Array.isArray(current?.nutrition) && current.nutrition.length > 0 ? (
-            <div className={styles.nutrition}>
-              {current.nutrition.map((n, i) => (
-                <table key={i} className={styles.nutritionTable}>
-                  {(n.servingPerPacket || n.servingSize) ? (
-                    <caption className={styles.nutritionCaption}>
-                      {n.servingPerPacket ? `${n.servingPerPacket} servings per packet` : ''}
-                      {n.servingPerPacket && n.servingSize ? ' · ' : ''}
-                      {n.servingSize ? `Serving size: ${n.servingSize}` : ''}
-                    </caption>
-                  ) : null}
-                  <tbody>
-                    <Row label="Energy"    value={n.energy}    unit="kJ" />
-                    <Row label="Protein"   value={n.protein}   unit="g" />
-                    <Row label="Fat"       value={n.fat}       unit="g" />
-                    <Row label="Saturated" value={n.saturated} unit="g" />
-                    <Row label="Carbs"     value={n.carbs}     unit="g" />
-                    <Row label="Sugars"    value={n.sugars}    unit="g" />
-                    <Row label="Sodium"    value={n.sodiums}   unit="mg" />
-                    {n.notes ? (
-                      <tr>
-                        <td colSpan={2} className={styles.nNotes}>{n.notes}</td>
-                      </tr>
-                    ) : null}
-                  </tbody>
-                </table>
-              ))}
+              {Array.isArray(current?.nutrition) && current.nutrition.length > 0 ? (
+                <div className={styles.nutrition}>
+                  {current.nutrition.map((n, i) => (
+                    <table key={i} className={styles.nutritionTable}>
+                      {(n.servingPerPacket || n.servingSize) ? (
+                        <caption className={styles.nutritionCaption}>
+                          {n.servingPerPacket ? `${n.servingPerPacket} servings per packet` : ''}
+                          {n.servingPerPacket && n.servingSize ? ' · ' : ''}
+                          {n.servingSize ? `Serving size: ${n.servingSize}` : ''}
+                        </caption>
+                      ) : null}
+                      <tbody>
+                        <Row label="Energy"    value={n.energy}    unit="kJ" />
+                        <Row label="Protein"   value={n.protein}   unit="g" />
+                        <Row label="Fat"       value={n.fat}       unit="g" />
+                        <Row label="Saturated" value={n.saturated} unit="g" />
+                        <Row label="Carbs"     value={n.carbs}     unit="g" />
+                        <Row label="Sugars"    value={n.sugars}    unit="g" />
+                        <Row label="Sodium"    value={n.sodiums}   unit="mg" />
+                        {n.notes ? (
+                          <tr>
+                            <td colSpan={2} className={styles.nNotes}>{n.notes}</td>
+                          </tr>
+                        ) : null}
+                      </tbody>
+                    </table>
+                  ))}
+                </div>
+              ) : null}
             </div>
-          ) : null}
-        </div>
 
-        <div
-          className={styles.detailsMeta}
-          style={{ '--meta-bg': metaBg, '--meta-fg': metaFg }}
-        >
-          <h1 className={styles.title}>{current?.title || 'Select a product'}</h1>
-          {current?.subTitle ? <p className={styles.subTitle}>{current.subTitle}</p> : null}
-          {current?.category ? (
-            <p className={styles.category}>{current.category}</p>
-          ) : null}
-        </div>
-      </div>
+            {/* Bottom meta with dynamic colours */}
+            <div
+              className={styles.detailsMeta}
+              style={{ '--meta-bg': metaBg, '--meta-fg': metaFg }}
+            >
+              <h1 className={styles.title}>{current?.title || 'Select a product'}</h1>
+              {current?.subTitle ? <p className={styles.subTitle}>{current.subTitle}</p> : null}
+              {current?.category ? (
+                <p className={styles.category}>{current.category}</p>
+              ) : null}
+            </div>
+          </div>
 
-      <div className={styles.colPicker}>
-        <ul className={styles.list}>
-          {products.map((p, i) => (
-            <li key={p.id}>
-              <button
-                className={i === index ? styles.itemActive : styles.item}
-                onClick={() => setIndex(i)}
-                type="button"
-              >
-                {p.title || `Product ${i + 1}`}
-              </button>
-            </li>
-          ))}
-        </ul>
+          {/* RIGHT: Picker */}
+          <div className={styles.colPicker}>
+            <ul className={styles.list}>
+              {products.map((p, i) => (
+                <li key={p.id}>
+                  <button
+                    className={i === index ? styles.itemActive : styles.item}
+                    onClick={() => setIndex(i)}
+                    type="button"
+                  >
+                    {p.title || `Product ${i + 1}`}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,17 +1,32 @@
+/* Full-width page background only for /shop */
+.pageRoot {
+  /* paint the background on the element... */
+  --shop-bg: var(--sand);
+  background: var(--shop-bg);
+  color: var(--ink);
+  min-height: 80vh;
+  min-height: 80svh;
+
+  /* ...then extend it to viewport edges without affecting layout */
+  box-shadow: 0 0 0 100vmax var(--shop-bg);
+  clip-path: inset(0 -100vmax);
+}
+
+/* Centered content container */
 .page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 16px;
-  min-height: 80vh;
-  min-height: 80svh;
+  padding: 24px 16px 0px 16px;
+  min-height: inherit; /* keep the height from pageRoot */
 }
 
 .grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr 0.8fr; /* image | details | picker */
-  gap: 24px;
+  gap: 60px;
   align-items: stretch;
   min-height: inherit;
+  padding-top: 80px;
 }
 
 .colImage {}
@@ -36,7 +51,7 @@
   --ls-cat:   -0.03em;
 }
 
-/* keep uppercase, but move spacing to per-element rules below */
+/* keep uppercase; per-element spacing below */
 .detailsMeta .title,
 .detailsMeta .subTitle,
 .detailsMeta .category {
@@ -49,8 +64,8 @@
   font-weight: 800;
   font-size: 32px;          /* same as .category */
   line-height: 1.1;
-  color: #fff;
-  opacity: 0.7;             /* 70% */
+  color: inherit;
+  opacity: 0.7;
   letter-spacing: var(--ls-title);
 }
 .subTitle {
@@ -59,15 +74,15 @@
   max-width: 60ch;
   font-size: 82px;
   line-height: 0.3;
-  color: #fff;
+  color: inherit;
   letter-spacing: var(--ls-sub);
 }
 .category {
   margin: 10px 0 0 0;
   font-weight: 700;
-  color: #fff;
+  color: inherit;
   font-size: 32px;          /* same as .title */
-  opacity: 0.7;             /* 70% */
+  opacity: 0.7;
   letter-spacing: var(--ls-cat);
 }
 
@@ -129,6 +144,7 @@
   border-radius: 6px;
   cursor: pointer;
   margin-bottom: 8px;
+  color: inherit; /* follow pageRoot text color */
 }
 .itemActive {
   border-color: #111;
@@ -137,11 +153,12 @@
 
 @media (max-width: 960px) {
   .grid { grid-template-columns: 1fr; }
-  .detailsMeta { padding: 12px;
-
-    /* tighten tracking a touch on small screens */
-    --ls-title: 0.06em;
-    --ls-sub:   0.08em;
-    --ls-cat:   0.06em;
+  .page { padding: 16px 12px; }
+  .detailsMeta {
+    padding: 12px;
+    /* slightly different tracking on small screens */
+    --ls-title: 0.02em;
+    --ls-sub:   0.01em;
+    --ls-cat:   0.02em;
   }
 }
