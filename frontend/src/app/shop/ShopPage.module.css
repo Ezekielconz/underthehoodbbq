@@ -27,8 +27,8 @@
   padding-top: 80px;
 }
 
-.colImage { overflow: visible; } /* let tilted image extend */
-.colDetails { display: flex; flex-direction: column; }
+.colImage { overflow: visible; position: relative; z-index: 2; } /* let tilted/shifted image extend and sit above meta */
+.colDetails { display: flex; flex-direction: column; position: relative; z-index: 1; }
 .colPicker {}
 
 .detailsMain {}
@@ -145,16 +145,24 @@
   .dotActive::before { animation: none; }
 }
 
-/* ---------- image + tilt ---------- */
+/* ---------- image + tilt + meta-overlap shift ---------- */
 .image {
   width: 100%;
   height: auto;
   object-fit: contain;
   transition: transform 200ms ease;
   will-change: transform;
+  /*combinetransformsviavarssotilt+horizontalshiftcancoexist*/--tilt-angle: 0deg;
+    transform: rotate(var(--tilt-angle));
+
 }
-.imageTiltLeft  { --tilt-angle: -13deg; transform: rotate(var(--tilt-angle)); }
-.imageTiltRight { --tilt-angle:  13deg; transform: rotate(var(--tilt-angle)); }
+
+/* only define angles here; let .image apply the transform */
+.imageTiltLeft  { --tilt-angle: -13deg; }
+.imageTiltRight { --tilt-angle:  13deg; }
+
+/* helper to control the shift separately if you want to tweak later */
+.imageShiftFromMeta { --img-shift: 28px; }
 
 .imageFallback {
   width: 100%;
@@ -206,6 +214,11 @@
   --ls-title: -0.01em;
   --ls-sub:   -0.03em;
   --ls-cat:   -0.03em;
+
+  /* bleed background to the LEFT edge of the viewport without affecting layout */
+  position: relative;
+  box-shadow: -100vmax 0 0 100vmax var(--meta-bg, #181617);
+  clip-path: inset(0 0 0 -100vmax);
 }
 .detailsMeta .title,
 .detailsMeta .subTitle,
@@ -261,6 +274,11 @@
 @media (max-width: 960px) {
   .grid { grid-template-columns: 1fr; }
   .page { padding: 16px 12px; }
+
+  /* remove the horizontal nudge on small screens */
+  .image,
+  .imageShiftFromMeta { --img-shift: 0; }
+
   .detailsMeta {
     padding: 12px;
     --ls-title: 0.02em;

@@ -4,6 +4,8 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import styles from './ShopPage.module.css';
 
+const LS_KEY = 'uth_cart_v1';
+
 function pickMetaColors(colour) {
   const fallback = '#181617';
   let bg = typeof colour === 'string' && colour.trim() ? colour.trim() : fallback;
@@ -29,9 +31,22 @@ function pickMetaColors(colour) {
   return { bg, fg };
 }
 
+function addItemToLocalStorage(item) {
+  try {
+    const list = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+    const idx = list.findIndex((x) => x.id === item.id);
+    if (idx >= 0) list[idx] = { ...list[idx], qty: (list[idx].qty || 1) + (item.qty || 1) };
+    else list.push({ ...item, qty: item.qty || 1 });
+    localStorage.setItem(LS_KEY, JSON.stringify(list));
+  } catch {
+    // ignore storage errors
+  }
+}
+
 export default function ShopPageClient({ products = [] }) {
   const [index, setIndex] = useState(0);
   const [slide, setSlide] = useState(0); // 0=Desc, 1=Ingredients, 2=Nutrition
+  const [added, setAdded] = useState(false);
 
   const current = useMemo(() => products[index] || null, [products, index]);
 
@@ -40,8 +55,8 @@ export default function ShopPageClient({ products = [] }) {
     [current?.colour]
   );
 
-  // reset carousel to first slide when switching products
-  useEffect(() => { setSlide(0); }, [index]);
+  // reset carousel & button state when switching products
+  useEffect(() => { setSlide(0); setAdded(false); }, [index]);
 
   const handlePrev = useCallback(() => setSlide(s => (s + 3 - 1) % 3), []);
   const handleNext = useCallback(() => setSlide(s => (s + 1) % 3), []);
@@ -52,12 +67,29 @@ export default function ShopPageClient({ products = [] }) {
 
   const handleAddToCart = useCallback(() => {
     if (!current) return;
-    console.log('Add to cart:', {
+    const detail = {
       id: current.id,
       title: current.title,
       price: current.price,
       slug: current.slug,
-    });
+      image: current.image,
+      colour: current.colour,
+      category: current.category,
+      qty: 1
+    };
+
+    // 1) persist to localStorage
+    addItemToLocalStorage(detail);
+
+    // 2) notify any listeners (e.g., the Cart page)
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('cart:add', { detail }));
+    }
+
+    // 3) quick button feedback
+    setAdded(true);
+    const t = setTimeout(() => setAdded(false), 1200);
+    return () => clearTimeout(t);
   }, [current]);
 
   // decide if we should tilt the product image
@@ -161,15 +193,15 @@ export default function ShopPageClient({ products = [] }) {
 
                 {/* Dots only (arrows removed) */}
                 <div className={styles.carouselControls}>
-                <div className={styles.dots} role="tablist" aria-label="Slides">
+                  <div className={styles.dots} role="tablist" aria-label="Slides">
                     {/* 🔥 moving flame marker */}
                     <span
-                    className={styles.flame}
-                    style={{ '--i': slide }}
-                    aria-hidden="true"
+                      className={styles.flame}
+                      style={{ '--i': slide }}
+                      aria-hidden="true"
                     />
                     {['Description', 'Ingredients', 'Nutrition'].map((label, i) => (
-                    <button
+                      <button
                         key={label}
                         type="button"
                         role="tab"
@@ -177,9 +209,9 @@ export default function ShopPageClient({ products = [] }) {
                         aria-label={label}
                         className={slide === i ? styles.dotActive : styles.dot}
                         onClick={() => setSlide(i)}
-                    />
+                      />
                     ))}
-                </div>
+                  </div>
                 </div>
               </div>
 
@@ -192,8 +224,12 @@ export default function ShopPageClient({ products = [] }) {
                 disabled={!current}
                 aria-label={current ? `Add ${current.title} to cart` : 'Add to cart'}
               >
-                Add to cart
+                {added ? 'Added!' : 'Add to cart'}
               </button>
+              {/* small, accessible live region for button feedback */}
+              <span aria-live="polite" className="sr-only">
+                {added ? `${current?.title || 'Item'} added to cart.` : ''}
+              </span>
             </div>
 
             {/* Bottom meta with dynamic colours */}

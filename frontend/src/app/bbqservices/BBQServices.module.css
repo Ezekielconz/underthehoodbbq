@@ -1,0 +1,148 @@
+/* On-theme with the Shop page ------------------------------------------------ */
+.pageRoot{
+  --shop-bg: var(--sand);
+  background: var(--shop-bg);
+  color: var(--ink);
+  min-height: 75svh;
+  box-shadow: 0 0 0 100vmax var(--shop-bg);
+  clip-path: inset(0 -100vmax);
+}
+
+.page{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+/* Hero */
+.hero{
+  padding: 24px 0 12px;
+  text-align: center;
+}
+.heroTitle{
+  margin: 0;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-size: clamp(28px, 4.5vw, 56px);
+}
+.heroKicker{
+  margin: 6px 0 0 0;
+  font-family: var(--font-gaegu), ui-sans-serif, system-ui, sans-serif !important;
+  font-weight: 700;
+  font-size: clamp(18px, 2.6vw, 24px);
+}
+
+/* Grid */
+.grid{
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr;
+  margin-top: 18px;
+}
+@media (min-width: 900px){
+  .grid{ grid-template-columns: 1fr 1fr; }
+}
+
+/* Cards */
+.card,
+.cardWide{
+  background: #fff;
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: clip;
+  display: flex;
+  flex-direction: column;
+}
+.cardWide{
+  grid-column: 1 / -1; /* full width row */
+}
+.cardHeader{
+  background: #181617;
+  color: #fff;
+  padding: 14px 16px;
+  text-align: center;
+  position: relative;
+
+  /* bleed left like your detailsMeta */
+  box-shadow: -100vmax 0 0 100vmax #181617;
+  clip-path: inset(0 0 0 -100vmax);
+}
+.cardTitle{
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 800;
+  font-size: clamp(18px, 2.5vw, 28px);
+}
+.cardBody{
+  padding: 16px;
+  font-size: 16px;
+  line-height: 1.55;
+}
+.list{
+  margin: 10px 0 0 0;
+  padding-left: 18px;
+}
+.specs{
+  margin: 10px 0 0 0;
+  padding-left: 18px;
+}
+.callout{
+  margin: 12px 0 0 0;
+  font-weight: 700;
+}
+.link{
+  color: var(--brand);
+  text-decoration: none;
+}
+.link:hover{ text-decoration: underline; }
+
+/* Buttons */
+.ctaRow{ margin-top: 14px; }
+.button,
+.buttonAlt{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #111;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform .06s ease, box-shadow .2s ease, background-color .2s ease, opacity .2s ease;
+}
+.button:hover{ transform: translateY(-1px); }
+.buttonAlt{
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
+.buttonAlt:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+
+/* Stockists strip (optional) */
+.strip{
+  margin-top: 28px;
+  padding: 14px 16px;
+  border: 1px dashed var(--ink);
+  border-radius: 12px;
+  text-align: center;
+  background: rgba(0,0,0,.03);
+}
+.stripText{
+  margin: 0;
+  font-family: var(--font-gaegu), ui-sans-serif, system-ui, sans-serif !important;
+  font-weight: 700;
+}
+.stripLink{
+  color: var(--brand);
+  text-decoration: none;
+}
+.stripLink:hover{ text-decoration: underline; }

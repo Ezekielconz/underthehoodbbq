@@ -13,6 +13,8 @@ const LINKS = [
   { href: '/contact', label: 'Contact' },
 ];
 
+const CART_KEY = 'uth_cart_v1';
+
 function NavLink({ href, label, pathname, onClick }) {
   const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
   return (
@@ -34,26 +36,49 @@ export default function Navbar({ logo }) {
   // close menu on route change
   useEffect(() => setOpen(false), [pathname]);
 
-  // simple cart badge from localStorage
+  // read cart from localStorage (qty field) and keep in sync
   useEffect(() => {
     const read = () => {
       try {
-        const items = JSON.parse(localStorage.getItem('cart') || '[]');
-        setCartCount(items.reduce((sum, i) => sum + (i.quantity || 1), 0));
-      } catch {}
+        const items = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+        const total = items.reduce((sum, i) => sum + (i.qty || 1), 0); // <- pure JS
+        setCartCount(total);
+      } catch (e) {
+        setCartCount(0);
+      }
     };
+
+    // initial read
     read();
-    window.addEventListener('storage', read);
-    return () => window.removeEventListener('storage', read);
+
+    // cross-tab changes
+    const onStorage = (e) => {
+      if (e.key === CART_KEY) read();
+    };
+    window.addEventListener('storage', onStorage);
+
+    // same-tab custom events (emit these from shop/cart pages)
+    const reRead = () => read();
+    window.addEventListener('cart:add', reRead);
+    window.addEventListener('cart:change', reRead);
+    window.addEventListener('cart:remove', reRead);
+    window.addEventListener('cart:clear', reRead);
+
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('cart:add', reRead);
+      window.removeEventListener('cart:change', reRead);
+      window.removeEventListener('cart:remove', reRead);
+      window.removeEventListener('cart:clear', reRead);
+    };
   }, []);
 
   // lock body scroll when menu is open (mobile)
   useEffect(() => {
-    if (open) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => { document.body.style.overflow = prev; };
-    }
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
   }, [open]);
 
   return (
@@ -94,7 +119,9 @@ export default function Navbar({ logo }) {
             ))}
             <Link href="/cart" className={`${styles.link} ${styles.cart}`} onClick={() => setOpen(false)}>
               <span aria-hidden>🛒</span>
-              <span className={styles.badge}>{cartCount}</span>
+              <span className={`${styles.badge} ${cartCount ? '' : styles.badgeHidden}`}>
+                {cartCount}
+              </span>
               <span className="sr-only">Cart</span>
             </Link>
           </nav>
