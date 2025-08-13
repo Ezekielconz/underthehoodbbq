@@ -161,9 +161,15 @@ export default function ShopPageClient({ products = [] }) {
 
                 {/* Dots only (arrows removed) */}
                 <div className={styles.carouselControls}>
-                  <div className={styles.dots} role="tablist" aria-label="Slides">
+                <div className={styles.dots} role="tablist" aria-label="Slides">
+                    {/* 🔥 moving flame marker */}
+                    <span
+                    className={styles.flame}
+                    style={{ '--i': slide }}
+                    aria-hidden="true"
+                    />
                     {['Description', 'Ingredients', 'Nutrition'].map((label, i) => (
-                      <button
+                    <button
                         key={label}
                         type="button"
                         role="tab"
@@ -171,9 +177,9 @@ export default function ShopPageClient({ products = [] }) {
                         aria-label={label}
                         className={slide === i ? styles.dotActive : styles.dot}
                         onClick={() => setSlide(i)}
-                      />
+                    />
                     ))}
-                  </div>
+                </div>
                 </div>
               </div>
 

@@ -36,11 +36,17 @@
 /* ---------- simple carousel (Gaegu font) ---------- */
 .carousel {
   position: relative;
-  overflow: hidden;
+  /* allow the flame marker to render above the dots */
+  overflow-x: hidden;
+  overflow-y: visible;
   border-radius: 8px;
   font-family: var(--font-gaegu), ui-sans-serif, system-ui, sans-serif !important;
   font-weight: 700;
   font-size: 20px;
+
+  /* animation tuning (customize as needed) */
+  --flame-bob-speed: 1.4s;
+  --flame-flicker-speed: 0.9s;
 }
 .carousel * { font-family: inherit !important; }
 
@@ -89,6 +95,7 @@
   opacity: 0.55;
   cursor: pointer;
   transition: transform .15s ease, opacity .15s ease, background-color .15s ease, box-shadow .15s ease;
+  position: relative;          /* anchor for SVG marker */
 }
 .dot:hover { opacity: .8; transform: scale(1.05); }
 .dot:focus-visible,
@@ -99,6 +106,43 @@
   background: #F15A24;         /* active color */
   opacity: 1;
   transform: scale(1.05);
+}
+
+/* SVG marker above the active dot (animated) */
+.dotActive::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 6px);     /* sits above the dot */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;                  /* adjust to taste */
+  height: 32px;
+  background: url('/flame-carousel.svg') no-repeat center / contain;
+  pointer-events: none;
+  z-index: 1;
+
+  /* animation */
+  animation:
+    flame-bob var(--flame-bob-speed) ease-in-out infinite,
+    flame-flicker var(--flame-flicker-speed) steps(2, end) infinite alternate;
+  will-change: transform, filter, opacity;
+}
+
+/* gentle up/down bob */
+@keyframes flame-bob {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%      { transform: translateX(-50%) translateY(-4px); }
+}
+
+/* tiny brightness/opacity flicker + glow */
+@keyframes flame-flicker {
+  0%   { filter: drop-shadow(0 2px 4px rgba(241,90,36,.25)) brightness(.98); opacity: .95; }
+  100% { filter: drop-shadow(0 3px 8px rgba(241,90,36,.45)) brightness(1.05); opacity: 1; }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .dotActive::before { animation: none; }
 }
 
 /* ---------- image + tilt ---------- */
