@@ -1,5 +1,6 @@
 .header {
   --header-h: 72px;
+  --header-bg: var(--ink);
   position: sticky;
   top: 0;
   background: var(--header-bg);
