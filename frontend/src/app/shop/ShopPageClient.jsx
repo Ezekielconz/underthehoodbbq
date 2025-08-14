@@ -207,7 +207,7 @@ export default function ShopPageClient({ products = [] }) {
 
           {/* MIDDLE: Details */}
           <div className={styles.colDetails}>
-            <div className={styles.detailsMain} onKeyDown={onKey}>
+            <div className={styles.detailsMain} onKeyDown={onKey} style={{ '--pill-bg': metaBg, '--pill-fg': metaFg }} >
               {/* Carousel */}
               <div
                 className={styles.carousel}

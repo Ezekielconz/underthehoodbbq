@@ -31,7 +31,14 @@
 .colDetails { display: flex; flex-direction: column; position: relative; z-index: 1; }
 .colPicker {}
 
-.detailsMain {}
+.detailsMain {
+  /* center inline children (price + button pill) */
+  text-align: center;
+
+  /* default pill colors; can be overridden inline via style props */
+  --pill-bg: var(--brand);
+  --pill-fg: #fff;
+}
 
 /* ---------- simple carousel (Gaegu font) ---------- */
 .carousel {
@@ -187,33 +194,45 @@
   border: 1px solid #e5e5e5;
 }
 
-/* ---------- price + CTA ---------- */
+/* ---------- BUY PILL (price + button on one line, centered, Strapi color) ---------- */
 .price {
-  font-weight: 700;
-  margin: 12px 0 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px 0 0;
+  margin-right: -3px;                 /* overlap whitespace seam */
+  padding: 12px 14px;
+  font-weight: 800;
   font-size: 20px;
+  line-height: 1.2;
+  background: #fff;
+  color: var(--ink);
+  border-right: 0;                    /* merge border with button */     /* left half of the pill */
+  white-space: nowrap;                /* keep price on one line */
+  vertical-align: middle;
 }
 
 .addToCart {
-  margin-top: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  color: var(--ink);
+  margin: 16px 0 0;
+  padding: 12px 16px;     /* right half of the pill */
+  border-left: 0;                     /* merge border with price */
+  background: var(--pill-bg);
+  color: var(--pill-fg);
   font-weight: 800;
   text-transform: uppercase;
-  border-color: #111;
   letter-spacing: .04em;
   cursor: pointer;
   transition: transform .06s ease, box-shadow .2s ease, background-color .2s ease, opacity .2s ease;
+  white-space: nowrap;                /* don't wrap button text */
+  vertical-align: middle;
 }
 .addToCart:hover   { transform: translateY(-1px); }
 .addToCart:active  { transform: translateY(0); }
-.addToCart:focus-visible { outline: none;}
+.addToCart:focus-visible { outline: none; }
 .addToCart:disabled { opacity: .5; cursor: not-allowed; }
 
 /* ---------- meta (title/sub/category) ---------- */
@@ -342,5 +361,13 @@
     height: 40vh;              /* 40% of viewport height */
     height: 40svh;             /* safe viewport on mobile */
     object-fit: contain;       /* keep aspect ratio */
+  }
+
+  /* pill sizing tweaks for small screens */
+  .price,
+  .addToCart {
+    font-size: 18px;
+    padding: 12px 14px;
+    line-height: 1.5;
   }
 }
