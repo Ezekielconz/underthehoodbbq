@@ -178,13 +178,18 @@
   .section { --img-height: 260px; --img-lift: 90px; --right-nudge: 16px; --link-shift: 6px; }
 }
 
-/* Mobile (≤720px) — no clamp, fixed values + extra breakpoints */
+/* Mobile (≤720px) — single breakpoint */
 @media (max-width: 720px) {
   /* keep three columns; fixed spacer for the image */
   .grid {
-    grid-template-columns: 1fr 100px 1fr;
+    grid-template-columns: 1fr 10px 1fr;
     gap: 10px;
-    padding: 0 12px;
+
+    /* shift all columns further left */
+    padding-left: 0;
+    padding-right: 40px; /* was 24px */
+    margin-left: -90px;  /* nudge the whole grid left */
+    margin-right: auto;
   }
 
   /* keep side alignment (no centering) */
@@ -194,10 +199,10 @@
 
   .list { gap: 10px; }
 
-  /* bigger, fixed link text (no clamp) */
+  /* larger link text */
   .link {
-    font-size: 48px;
-    line-height: 0.1; /* prevent clipping on tall fonts */
+    font-size: 56px;
+    line-height: 0.1; /* avoid clipping on tall fonts */
   }
 
   /* brand row stacks */
@@ -209,23 +214,8 @@
   }
   .brandLeft, .brandCenter, .brandRight { text-align: center; }
 
-  /* larger brand text too */
   .brandText { font-size: 32px; }
 
   /* tune image size/lift for mobile */
   .section { --img-height: 200px; --img-lift: 70px; }
-}
-
-/* Narrow phones (≤560px) */
-@media (max-width: 560px) {
-  .grid { grid-template-columns: 1fr 84px 1fr; }
-  .link { font-size: 40px; }
-  .brandText { font-size: 30px; }
-}
-
-/* Very narrow phones (≤420px) */
-@media (max-width: 420px) {
-  .grid { grid-template-columns: 1fr 70px 1fr; }
-  .link { font-size: 38px; }
-  .brandText { font-size: 28px; }
 }
