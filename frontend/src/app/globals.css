@@ -2,7 +2,7 @@
 
 /* Brand tokens */
 :root {
-  --ink: #111111;        /* text / icons */
+  --ink: #181617;        /* text / icons */
   --brand: #F15921;      /* accent / CTA */
   --sand: #D7D1C3;       /* warm neutral */
 
@@ -20,9 +20,9 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #111111;
+    --background: #181617;
     --foreground: var(--ink);
-    --header-bg: #111111;
+    --header-bg: #181617;
     --border: #262626;
   }
 }
