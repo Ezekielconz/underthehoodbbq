@@ -53,7 +53,6 @@ export default function ShopPageClient({ products = [] }) {
     [current?.colour]
   );
 
-  // reset carousel & button state when switching products
   useEffect(() => { setSlide(0); setAdded(false); }, [index]);
 
   const handlePrev = useCallback(() => setSlide(s => (s + 3 - 1) % 3), []);
@@ -87,7 +86,6 @@ export default function ShopPageClient({ products = [] }) {
     return () => clearTimeout(t);
   }, [current]);
 
-  // decide if we should tilt the product image
   const tiltClass = useMemo(() => {
     const cat = (current?.category || '').toLowerCase();
     if (cat.includes('rub')) return styles.imageTiltLeft;
@@ -119,9 +117,7 @@ export default function ShopPageClient({ products = [] }) {
   };
 
   const onPointerDown = useCallback((e) => {
-    // If the pointer started on the dots/controls, don't initiate a drag.
     if (isFromControls(e.target)) return;
-
     drag.current.width = (carouselRef.current?.offsetWidth || 1);
     drag.current.startX = e.clientX;
     drag.current.startY = e.clientY;
@@ -130,7 +126,6 @@ export default function ShopPageClient({ products = [] }) {
     drag.current.capturing = false;
     setDragX(0);
     setDragging(true);
-    // DO NOT capture here; wait until we confirm horizontal drag.
   }, []);
 
   const onPointerMove = useCallback((e) => {
@@ -141,7 +136,6 @@ export default function ShopPageClient({ products = [] }) {
     if (!drag.current.lock) {
       if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
         drag.current.lock = 'x';
-        // Now that we've confirmed a horizontal drag, capture the pointer.
         e.currentTarget.setPointerCapture?.(e.pointerId);
         drag.current.capturing = true;
       } else if (Math.abs(dy) > 8) {
@@ -150,8 +144,8 @@ export default function ShopPageClient({ products = [] }) {
     }
 
     if (drag.current.lock === 'x') {
-      e.preventDefault(); // keep the gesture horizontal
-      const cap = drag.current.width * 0.35; // rubber-band
+      e.preventDefault();
+      const cap = drag.current.width * 0.35;
       const clamped = Math.max(-cap, Math.min(cap, dx));
       drag.current.dx = clamped;
       setDragX(clamped);
@@ -171,7 +165,6 @@ export default function ShopPageClient({ products = [] }) {
       else handleNext();
     }
 
-    // release capture if we grabbed it
     if (drag.current.capturing) {
       try { e.currentTarget.releasePointerCapture?.(e.pointerId); } catch {}
     }
@@ -207,7 +200,11 @@ export default function ShopPageClient({ products = [] }) {
 
           {/* MIDDLE: Details */}
           <div className={styles.colDetails}>
-            <div className={styles.detailsMain} onKeyDown={onKey} style={{ '--pill-bg': metaBg, '--pill-fg': metaFg }} >
+            <div
+              className={styles.detailsMain}
+              onKeyDown={onKey}
+              style={{ '--pill-bg': metaBg, '--pill-fg': metaFg }}
+            >
               {/* Carousel */}
               <div
                 className={styles.carousel}
@@ -292,7 +289,7 @@ export default function ShopPageClient({ products = [] }) {
                 </div>
               </div>
 
-              {/* Price + Add to Cart (below carousel) */}
+              {/* Price + Add to Cart (pill) */}
               {current?.price != null ? <p className={styles.price}>${current.price}</p> : null}
               <button
                 className={styles.addToCart}
@@ -325,7 +322,7 @@ export default function ShopPageClient({ products = [] }) {
           <div className={styles.colPicker}>
             <ul className={styles.list}>
               {products.map((p, i) => (
-                <li key={p.id}>
+                <li key={p.id} className={styles.listItem}>
                   <button
                     className={i === index ? styles.itemActive : styles.item}
                     onClick={() => setIndex(i)}
@@ -337,6 +334,7 @@ export default function ShopPageClient({ products = [] }) {
               ))}
             </ul>
           </div>
+
         </div>
       </div>
     </div>

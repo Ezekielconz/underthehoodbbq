@@ -27,15 +27,12 @@
   padding-top: 80px;
 }
 
-.colImage { overflow: visible; position: relative; z-index: 2; } /* let tilted/shifted image extend and sit above meta */
+.colImage { overflow: visible; position: relative; z-index: 2; }
 .colDetails { display: flex; flex-direction: column; position: relative; z-index: 1; }
 .colPicker {}
 
 .detailsMain {
-  /* center inline children (price + button pill) */
   text-align: center;
-
-  /* default pill colors; can be overridden inline via style props */
   --pill-bg: var(--brand);
   --pill-fg: #fff;
 }
@@ -43,7 +40,6 @@
 /* ---------- simple carousel (Gaegu font) ---------- */
 .carousel {
   position: relative;
-  /* allow the flame marker to render above the dots */
   overflow-x: hidden;
   overflow-y: visible;
   border-radius: 8px;
@@ -51,13 +47,11 @@
   font-weight: 700;
   font-size: 20px;
 
-  /* animation tuning (customize as needed) */
   --flame-bob-speed: 1.4s;
   --flame-flicker-speed: 0.9s;
 
-  /* swipe-friendly behavior */
-  touch-action: pan-y;            /* allow vertical page scroll, we handle horizontal drag */
-  overscroll-behavior-x: contain; /* prevent back-swipe / overscroll on iOS/Android */
+  touch-action: pan-y;
+  overscroll-behavior-x: contain;
   -webkit-tap-highlight-color: transparent;
 }
 .carousel * { font-family: inherit !important; }
@@ -65,15 +59,12 @@
 .track {
   display: flex;
   transition: transform 300ms ease;
-  will-change: transform;     /* smoother dragging */
-  user-select: none;          /* avoid text selection while dragging */
+  will-change: transform;
+  user-select: none;
   -webkit-user-select: none;
   cursor: grab;
 }
-.dragging {
-  transition: none;           /* disable snapping during drag */
-  cursor: grabbing;
-}
+.dragging { transition: none; cursor: grabbing; }
 
 .slide {
   flex: 0 0 100%;
@@ -82,9 +73,8 @@
   box-sizing: border-box;
 }
 
-/* ensure long text wraps and is readable */
-.description,
-.ingredients {
+/* long text readability */
+.description, .ingredients {
   margin: 0;
   white-space: normal;
   overflow-wrap: anywhere;
@@ -102,9 +92,8 @@
   gap: 10px;
 }
 
-/* inactive + base dot styles */
-.dot,
-.dotActive {
+/* dots */
+.dot, .dotActive {
   appearance: none;
   border: none;
   margin: 0;
@@ -112,76 +101,57 @@
   width: 12px;
   height: 12px;
   border-radius: 999px;
-  background: #111111;         /* inactive color */
+  background: #111111;
   opacity: 0.55;
   cursor: pointer;
   transition: transform .15s ease, opacity .15s ease, background-color .15s ease, box-shadow .15s ease;
-  position: relative;          /* anchor for SVG marker */
+  position: relative;
 }
 .dot:hover { opacity: .8; transform: scale(1.05); }
-.dot:focus-visible,
-.dotActive:focus-visible { box-shadow: 0 0 0 3px rgba(241,90,36,.35); outline: none; }
+.dot:focus-visible, .dotActive:focus-visible { box-shadow: 0 0 0 3px rgba(241,90,36,.35); outline: none; }
+.dotActive { background: #F15A24; opacity: 1; transform: scale(1.05); }
 
-/* active */
-.dotActive {
-  background: #F15A24;         /* active color */
-  opacity: 1;
-  transform: scale(1.05);
-}
-
-/* SVG marker above the active dot (animated) */
 .dotActive::before {
   content: '';
   position: absolute;
-  bottom: calc(100% + 6px);     /* sits above the dot */
+  bottom: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%);
-  width: 22px;                  /* adjust to taste */
+  width: 22px;
   height: 32px;
   background: url('/flame-carousel.svg') no-repeat center / contain;
   pointer-events: none;
   z-index: 1;
-
-  /* animation */
   animation:
     flame-bob var(--flame-bob-speed) ease-in-out infinite,
     flame-flicker var(--flame-flicker-speed) steps(2, end) infinite alternate;
   will-change: transform, filter, opacity;
 }
 
-/* gentle up/down bob */
 @keyframes flame-bob {
   0%, 100% { transform: translateX(-50%) translateY(0); }
   50%      { transform: translateX(-50%) translateY(-4px); }
 }
-
-/* tiny brightness/opacity flicker + glow */
 @keyframes flame-flicker {
   0%   { filter: drop-shadow(0 2px 4px rgba(241,90,36,.25)) brightness(.98); opacity: .95; }
   100% { filter: drop-shadow(0 3px 8px rgba(241,90,36,.45)) brightness(1.05); opacity: 1; }
 }
-
-/* Respect reduced-motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .dotActive::before { animation: none; }
 }
 
-/* ---------- image + tilt + meta-overlap shift ---------- */
+/* ---------- image + tilt ---------- */
 .image {
   width: 100%;
   height: auto;
   object-fit: contain;
   transition: transform 200ms ease;
   will-change: transform;
-  /*combinetransformsviavarssotilt+horizontalshiftcancoexist*/--tilt-angle: 0deg;
+  --tilt-angle: 0deg;
   transform: rotate(var(--tilt-angle));
 }
-
-/* only define angles here; let .image apply the transform */
 .imageTiltLeft  { --tilt-angle: -13deg; }
 .imageTiltRight { --tilt-angle:  13deg; }
-
-/* helper to control the shift separately if you want to tweak later */
 .imageShiftFromMeta { --img-shift: 28px; }
 
 .imageFallback {
@@ -194,32 +164,31 @@
   border: 1px solid #e5e5e5;
 }
 
-/* ---------- BUY PILL (price + button on one line, centered, Strapi color) ---------- */
+/* ---------- BUY PILL (price + button) ---------- */
 .price {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   margin: 16px 0 0;
-  margin-right: -3px;                 /* overlap whitespace seam */
+  margin-right: -3px;
   padding: 12px 14px;
   font-weight: 800;
   font-size: 20px;
   line-height: 1.2;
   background: #fff;
   color: var(--ink);
-  border-right: 0;                    /* merge border with button */     /* left half of the pill */
-  white-space: nowrap;                /* keep price on one line */
+  border-right: 0;
+  white-space: nowrap;
   vertical-align: middle;
 }
-
 .addToCart {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   margin: 16px 0 0;
-  padding: 12px 16px;     /* right half of the pill */
-  border-left: 0;                     /* merge border with price */
+  padding: 12px 16px;
+  border-left: 0;
   background: var(--pill-bg);
   color: var(--pill-fg);
   font-weight: 800;
@@ -227,7 +196,7 @@
   letter-spacing: .04em;
   cursor: pointer;
   transition: transform .06s ease, box-shadow .2s ease, background-color .2s ease, opacity .2s ease;
-  white-space: nowrap;                /* don't wrap button text */
+  white-space: nowrap;
   vertical-align: middle;
 }
 .addToCart:hover   { transform: translateY(-1px); }
@@ -247,7 +216,6 @@
   --ls-sub:   -0.03em;
   --ls-cat:   -0.03em;
 
-  /* bleed background to the LEFT edge of the viewport without affecting layout */
   position: relative;
   box-shadow: -100vmax 0 0 100vmax var(--meta-bg, #181617);
   clip-path: inset(0 0 0 -100vmax);
@@ -257,8 +225,6 @@
 .detailsMeta .category {
   text-transform: uppercase;
 }
-
-/* bottom meta text */
 .title {
   margin: 0;
   font-weight: 800;
@@ -286,17 +252,17 @@
   letter-spacing: var(--ls-cat);
 }
 
-/* ---------- nutrition layout: centered on all screens ---------- */
+/* ---------- nutrition centered ---------- */
 .nutrition {
   display: flex;
   flex-direction: column;
-  align-items: center;      /* center the whole block */
+  align-items: center;
   gap: 12px;
 }
 .nutritionTable {
   border-collapse: collapse;
-  margin: 0 auto;           /* center the table */
-  text-align: center;       /* default center */
+  margin: 0 auto;
+  text-align: center;
 }
 .nutritionCaption {
   caption-side: top;
@@ -306,17 +272,12 @@
   opacity: .85;
 }
 .nutritionTable th,
-.nutritionTable td {
-  padding: 0 10px;
-  text-align: center;       /* ensure cells are centered */
-}
-.nLabel,
-.nValue {
-  text-align: center;       /* JSX Row() uses these classes */
-}
+.nutritionTable td { padding: 0 10px; text-align: center; }
+.nLabel, .nValue { text-align: center; }
 
-/* picker list */
+/* ---------- product picker (desktop = vertical) ---------- */
 .list { list-style: none; margin: 0; padding: 0; }
+.listItem { margin: 0 0 8px 0; } /* desktop vertical spacing */
 .item,
 .itemActive {
   display: block;
@@ -327,47 +288,68 @@
   border: 1px solid #ddd;
   border-radius: 6px;
   cursor: pointer;
-  margin-bottom: 8px;
   color: inherit;
 }
 .itemActive { border-color: #111; background: #fafafa; }
 
-/* Mobile (≤720px): stack into a single column + 40% viewport image height, centered */
+/* ---------- Mobile (≤720px) ---------- */
 @media (max-width: 720px) {
   .grid {
-    grid-template-columns: 1fr;  /* was 1.2fr 1fr 0.8fr */
-    gap: 20px;                   /* tighter spacing */
-    padding-top: 24px;           /* less top padding */
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding-top: 24px;
+    padding-bottom: 50px;
   }
 
-  /* ensure each column spans the single track */
-  .colImage,
-  .colDetails,
-  .colPicker {
-    grid-column: 1;
-  }
+  /* treat details’ children as grid items so we can place meta above the image */
+  .colDetails { display: contents; }
+
+  /* place items on explicit rows */
+  .colPicker   { grid-column: 1; grid-row: 1; }
+  .detailsMeta { grid-column: 1; grid-row: 2; margin-top: 0; }
+  .colImage    { grid-column: 1; grid-row: 3; }
+  .detailsMain { grid-column: 1; grid-row: 4; }
 
   /* center the image */
-  .colImage {
-    display: flex;
-    justify-content: center;   /* horizontal center */
-  }
-
+  .colImage { display: flex; justify-content: center; }
   .image {
     display: block;
-    margin: 0 auto;            /* extra safety for centering */
-    width: auto;               /* override desktop 100% width */
+    margin: 0 auto;
+    width: auto;
     max-width: 100%;
-    height: 40vh;              /* 40% of viewport height */
-    height: 40svh;             /* safe viewport on mobile */
-    object-fit: contain;       /* keep aspect ratio */
+    height: 40vh;
+    height: 40svh;
+    object-fit: contain;
   }
 
-  /* pill sizing tweaks for small screens */
-  .price,
-  .addToCart {
-    font-size: 18px;
-    padding: 12px 14px;
-    line-height: 1.5;
+  /* pill sizing tweaks */
+  .price, .addToCart { font-size: 18px; padding: 12px 14px; line-height: 1.5; }
+
+  /* product picker: horizontal scroller */
+  .colPicker { overflow: hidden; }
+  .list {
+    display: flex;
+    gap: 10px;
+    padding: 0 4px 8px;
+    margin: 0 -12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    white-space: nowrap;
+  }
+  .colPicker::-webkit-scrollbar,
+  .list::-webkit-scrollbar { display: none; }
+
+  .listItem { margin: 0; }
+  .item, .itemActive {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 10px 14px;
+    white-space: nowrap;
+    scroll-snap-align: start;
   }
 }
