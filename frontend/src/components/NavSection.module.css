@@ -18,7 +18,11 @@
   transform: skewY(var(--skew-angle));
   transform-origin: center;
   padding: 50px 0 0;
-  overflow: visible;
+
+  /* prevent horizontal scroll while allowing vertical overflow */
+  overflow-x: clip; /* use 'hidden' if you need broader support */
+  overflow-y: visible;
+
   position: relative;
   z-index: 1;
 }
@@ -178,34 +182,35 @@
   .section { --img-height: 260px; --img-lift: 90px; --right-nudge: 16px; --link-shift: 6px; }
 }
 
-/* Mobile (≤720px) — single breakpoint */
+/* Mobile (≤720px) — center link columns + no horizontal scroll */
 @media (max-width: 720px) {
-  /* keep three columns; fixed spacer for the image */
   .grid {
-    grid-template-columns: 1fr 10px 1fr;
+    /* content-sized tracks, centered */
+    grid-template-columns: max-content 10px max-content;
+    justify-content: center;
     gap: 10px;
 
-    /* shift all columns further left */
-    padding-left: 0;
-    padding-right: 40px; /* was 24px */
-    margin-left: -90px;  /* nudge the whole grid left */
+    /* ensure the grid never causes horizontal scroll */
+    max-width: 100vw;
+    padding-left: 12px;
+    padding-right: 12px;
+    margin-left: auto;
     margin-right: auto;
+    overflow-x: clip;
+    box-sizing: border-box;
   }
 
-  /* keep side alignment (no centering) */
-  .left  { grid-column: 1; text-align: right; }
-  .right { grid-column: 3; text-align: left; padding-left: 0; }
+  .left  { grid-column: 1; text-align: right; justify-self: end; }
+  .right { grid-column: 3; text-align: left;  justify-self: start; padding-left: 0; }
   .right .list { align-items: flex-start; }
 
   .list { gap: 10px; }
 
-  /* larger link text */
   .link {
     font-size: 56px;
-    line-height: 0.1; /* avoid clipping on tall fonts */
+    line-height: 0.1;
   }
 
-  /* brand row stacks */
   .brandGrid {
     grid-template-columns: 1fr;
     gap: 12px;
@@ -213,9 +218,7 @@
     min-height: 56px;
   }
   .brandLeft, .brandCenter, .brandRight { text-align: center; }
-
   .brandText { font-size: 32px; }
 
-  /* tune image size/lift for mobile */
-  .section { --img-height: 200px; --img-lift: 70px; }
+  .section { --img-height: 320px; --img-lift: 110px; }
 }

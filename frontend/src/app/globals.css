@@ -27,10 +27,21 @@
   }
 }
 
+/* prevent horizontal scroll globally */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", sans-serif;
+}
+
+/* helpful for consistent sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 .font-hand { font-family: var(--font-hand), ui-sans-serif, system-ui, sans-serif; }
