@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import styles from './ShopPage.module.css';
 
@@ -38,9 +38,7 @@ function addItemToLocalStorage(item) {
     if (idx >= 0) list[idx] = { ...list[idx], qty: (list[idx].qty || 1) + (item.qty || 1) };
     else list.push({ ...item, qty: item.qty || 1 });
     localStorage.setItem(LS_KEY, JSON.stringify(list));
-  } catch {
-    // ignore storage errors
-  }
+  } catch {}
 }
 
 export default function ShopPageClient({ products = [] }) {
@@ -78,15 +76,12 @@ export default function ShopPageClient({ products = [] }) {
       qty: 1
     };
 
-    // 1) persist to localStorage
     addItemToLocalStorage(detail);
 
-    // 2) notify any listeners (e.g., the Cart page)
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('cart:add', { detail }));
     }
 
-    // 3) quick button feedback
     setAdded(true);
     const t = setTimeout(() => setAdded(false), 1200);
     return () => clearTimeout(t);
@@ -112,6 +107,84 @@ export default function ShopPageClient({ products = [] }) {
     );
   }
 
+  /* ---------------- Swipe / drag for carousel ---------------- */
+  const carouselRef = useRef(null);
+  const [dragging, setDragging] = useState(false);
+  const [dragX, setDragX] = useState(0); // px
+  const drag = useRef({ startX: 0, startY: 0, dx: 0, lock: null, width: 1, capturing: false });
+
+  const isFromControls = (target) => {
+    const el = target;
+    return !!el?.closest?.(`.${styles.carouselControls}, .${styles.dots}, button`);
+  };
+
+  const onPointerDown = useCallback((e) => {
+    // If the pointer started on the dots/controls, don't initiate a drag.
+    if (isFromControls(e.target)) return;
+
+    drag.current.width = (carouselRef.current?.offsetWidth || 1);
+    drag.current.startX = e.clientX;
+    drag.current.startY = e.clientY;
+    drag.current.dx = 0;
+    drag.current.lock = null;
+    drag.current.capturing = false;
+    setDragX(0);
+    setDragging(true);
+    // DO NOT capture here; wait until we confirm horizontal drag.
+  }, []);
+
+  const onPointerMove = useCallback((e) => {
+    if (!dragging) return;
+    const dx = e.clientX - drag.current.startX;
+    const dy = e.clientY - drag.current.startY;
+
+    if (!drag.current.lock) {
+      if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
+        drag.current.lock = 'x';
+        // Now that we've confirmed a horizontal drag, capture the pointer.
+        e.currentTarget.setPointerCapture?.(e.pointerId);
+        drag.current.capturing = true;
+      } else if (Math.abs(dy) > 8) {
+        drag.current.lock = 'y';
+      }
+    }
+
+    if (drag.current.lock === 'x') {
+      e.preventDefault(); // keep the gesture horizontal
+      const cap = drag.current.width * 0.35; // rubber-band
+      const clamped = Math.max(-cap, Math.min(cap, dx));
+      drag.current.dx = clamped;
+      setDragX(clamped);
+    }
+  }, [dragging]);
+
+  const endDrag = useCallback((e) => {
+    if (!dragging) return;
+    const dx = drag.current.dx;
+    const threshold = Math.min(80, drag.current.width * 0.15); // px
+
+    setDragging(false);
+    setDragX(0);
+
+    if (Math.abs(dx) > threshold) {
+      if (dx > 0) handlePrev();
+      else handleNext();
+    }
+
+    // release capture if we grabbed it
+    if (drag.current.capturing) {
+      try { e.currentTarget.releasePointerCapture?.(e.pointerId); } catch {}
+    }
+    drag.current.dx = 0;
+    drag.current.lock = null;
+    drag.current.capturing = false;
+  }, [dragging, handlePrev, handleNext]);
+
+  const dragOffsetPct = useMemo(() => {
+    const w = drag.current.width || 1;
+    return dragging ? (dragX / w) * 100 : 0;
+  }, [dragX, dragging]);
+
   return (
     <div className={styles.pageRoot}>
       <div className={styles.page}>
@@ -136,10 +209,20 @@ export default function ShopPageClient({ products = [] }) {
           <div className={styles.colDetails}>
             <div className={styles.detailsMain} onKeyDown={onKey}>
               {/* Carousel */}
-              <div className={styles.carousel} role="region" aria-label="Product information">
+              <div
+                className={styles.carousel}
+                role="region"
+                aria-label="Product information"
+                ref={carouselRef}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
+                onPointerLeave={endDrag}
+              >
                 <div
-                  className={styles.track}
-                  style={{ transform: `translateX(-${slide * 100}%)` }}
+                  className={`${styles.track} ${dragging ? styles.dragging : ''}`}
+                  style={{ transform: `translateX(calc(-${slide * 100}% + ${dragOffsetPct}%))` }}
                 >
                   {/* Slide 1: Description */}
                   <section className={styles.slide} aria-label="Description" tabIndex={-1}>
@@ -191,15 +274,9 @@ export default function ShopPageClient({ products = [] }) {
                   </section>
                 </div>
 
-                {/* Dots only (arrows removed) */}
+                {/* Dots (clickable on desktop, tap on mobile) */}
                 <div className={styles.carouselControls}>
                   <div className={styles.dots} role="tablist" aria-label="Slides">
-                    {/* 🔥 moving flame marker */}
-                    <span
-                      className={styles.flame}
-                      style={{ '--i': slide }}
-                      aria-hidden="true"
-                    />
                     {['Description', 'Ingredients', 'Nutrition'].map((label, i) => (
                       <button
                         key={label}
@@ -226,7 +303,6 @@ export default function ShopPageClient({ products = [] }) {
               >
                 {added ? 'Added!' : 'Add to cart'}
               </button>
-              {/* small, accessible live region for button feedback */}
               <span aria-live="polite" className="sr-only">
                 {added ? `${current?.title || 'Item'} added to cart.` : ''}
               </span>

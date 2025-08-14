@@ -47,13 +47,27 @@
   /* animation tuning (customize as needed) */
   --flame-bob-speed: 1.4s;
   --flame-flicker-speed: 0.9s;
+
+  /* swipe-friendly behavior */
+  touch-action: pan-y;            /* allow vertical page scroll, we handle horizontal drag */
+  overscroll-behavior-x: contain; /* prevent back-swipe / overscroll on iOS/Android */
+  -webkit-tap-highlight-color: transparent;
 }
 .carousel * { font-family: inherit !important; }
 
 .track {
   display: flex;
   transition: transform 300ms ease;
+  will-change: transform;     /* smoother dragging */
+  user-select: none;          /* avoid text selection while dragging */
+  -webkit-user-select: none;
+  cursor: grab;
 }
+.dragging {
+  transition: none;           /* disable snapping during drag */
+  cursor: grabbing;
+}
+
 .slide {
   flex: 0 0 100%;
   min-width: 100%;
@@ -153,8 +167,7 @@
   transition: transform 200ms ease;
   will-change: transform;
   /*combinetransformsviavarssotilt+horizontalshiftcancoexist*/--tilt-angle: 0deg;
-    transform: rotate(var(--tilt-angle));
-
+  transform: rotate(var(--tilt-angle));
 }
 
 /* only define angles here; let .image apply the transform */
@@ -271,19 +284,34 @@
 }
 .itemActive { border-color: #111; background: #fafafa; }
 
-@media (max-width: 960px) {
-  .grid { grid-template-columns: 1fr; }
-  .page { padding: 16px 12px; }
-
-  /* remove the horizontal nudge on small screens */
-  .image,
-  .imageShiftFromMeta { --img-shift: 0; }
-
-  .detailsMeta {
-    padding: 12px;
-    --ls-title: 0.02em;
-    --ls-sub:   0.01em;
-    --ls-cat:   0.02em;
+/* Mobile (≤720px): stack into a single column + 40% viewport image height, centered */
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr;  /* was 1.2fr 1fr 0.8fr */
+    gap: 20px;                   /* tighter spacing */
+    padding-top: 24px;           /* less top padding */
   }
-  .subTitle { font-size: 48px; line-height: 0.9; }
+
+  /* ensure each column spans the single track */
+  .colImage,
+  .colDetails,
+  .colPicker {
+    grid-column: 1;
+  }
+
+  /* center the image */
+  .colImage {
+    display: flex;
+    justify-content: center;   /* horizontal center */
+  }
+
+  .image {
+    display: block;
+    margin: 0 auto;            /* extra safety for centering */
+    width: auto;               /* override desktop 100% width */
+    max-width: 100%;
+    height: 40vh;              /* 40% of viewport height */
+    height: 40svh;             /* safe viewport on mobile */
+    object-fit: contain;       /* keep aspect ratio */
+  }
 }
