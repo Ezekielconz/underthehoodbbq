@@ -6,12 +6,12 @@
   --brand: #F15921;      /* accent / CTA */
   --sand: #D7D1C3;       /* warm neutral */
 
-  --background: #ffffff; /* page bg */
+  --background: var(--ink); /* page bg */
   --foreground: var(--ink);
 
   /* component-level tokens */
   --header-bg: var(--sand);
-  --border: #eaeaea;
+  --border: var(--ink);
 
   /* fonts from next/font */
   --font-sans: var(--font-barlow-condensed);
@@ -21,7 +21,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #111111;
-    --foreground: #ededed;
+    --foreground: var(--ink);
     --header-bg: #111111;
     --border: #262626;
   }
