@@ -183,6 +183,7 @@
 }
 
 /* Mobile (≤720px) — center link columns + no horizontal scroll */
+/* Mobile (≤720px) — center link columns + no horizontal scroll */
 @media (max-width: 720px) {
   .grid {
     /* content-sized tracks, centered */
@@ -203,22 +204,24 @@
   .left  { grid-column: 1; text-align: right; justify-self: end; }
   .right { grid-column: 3; text-align: left;  justify-self: start; padding-left: 0; }
   .right .list { align-items: flex-start; }
-
   .list { gap: 10px; }
 
-  .link {
-    font-size: 56px;
-    line-height: 0.1;
-  }
+  .link { font-size: 48px; line-height: 0.1; }
 
+  /* brand row: keep three columns so text sits to the RIGHT of the image */
   .brandGrid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    text-align: center;
-    min-height: 56px;
+    grid-template-columns: 1fr 10px max-content; /* left filler | spacer | right text */
+    align-items: center;
+    justify-content: center;
+    text-align: initial;   /* no forced centering */
+    min-height: 40px;
   }
-  .brandLeft, .brandCenter, .brandRight { text-align: center; }
-  .brandText { font-size: 32px; }
+  .brandLeft   { text-align: right; }
+  .brandCenter { text-align: center; }
+  .brandRight  { text-align: right; justify-self: end; }
+  .brandRightInner { white-space: nowrap; }
+  .brandText { font-size: 20px; white-space: nowrap; }
 
-  .section { --img-height: 320px; --img-lift: 110px; }
+  /* bigger image + lowered (less upward lift) */
+  .section { --img-height: 340px; --img-lift: 40px; }
 }
