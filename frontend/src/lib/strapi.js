@@ -1,3 +1,4 @@
+// src/lib/strapi.js
 const STRAPI_URL = (process.env.STRAPI_URL || '').replace(/\/$/, '');
 const STRAPI_TOKEN = process.env.STRAPI_TOKEN || '';
 
@@ -60,6 +61,7 @@ export async function strapiFetch(path, params = {}, fetchOptions = {}) {
       Accept: 'application/json',
       ...(STRAPI_TOKEN ? { Authorization: `Bearer ${STRAPI_TOKEN}` } : {}),
     },
+    // Default ISR cache for 60s; caller can override via fetchOptions.next
     next: { revalidate: 60 },
     ...fetchOptions,
   });
@@ -122,7 +124,7 @@ export async function getProducts() {
     'populate[0]': 'images',
     'populate[1]': 'art',
     'populate[2]': 'category',
-    'populate[3]': 'nutrition',          // components must be populated
+    'populate[3]': 'nutrition',
 
     // top-level fields only
     'fields[0]': 'title',
@@ -216,9 +218,10 @@ export async function getHome() {
       'populate[1]': 'navSection.leftItems',
       'populate[2]': 'navSection.rightItems',
       'populate[3]': 'navSection.image',
+      // include product so its id/documentId is definitely present
+      'populate[4]': 'navSection.product',
       ...(process.env.NODE_ENV !== 'production' ? { publicationState: 'preview' } : {}),
-    },
-    { next: { revalidate: 0 } }
+    }
   );
 }
 
@@ -316,7 +319,8 @@ export async function getNewSectionProduct() {
     params['sort[0]'] = 'createdAt:desc';
   }
 
-  const res = await strapiFetch('/products', params, { next: { revalidate: 0 } });
+  // IMPORTANT: no { revalidate: 0 } — let ISR cache this like /shop
+  const res = await strapiFetch('/products', params);
   return res?.data?.[0] || null;
 }
 
