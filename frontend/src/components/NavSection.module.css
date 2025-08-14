@@ -60,6 +60,13 @@
   font-size: 82px;
   padding: 4px 0;
 
+  /* never wrap long labels */
+  white-space: nowrap;
+  text-wrap: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+
   transition:
     transform var(--link-duration) cubic-bezier(.2,.8,.2,1),
     letter-spacing var(--link-duration) ease,
@@ -165,28 +172,35 @@
   filter: drop-shadow(0 12px 24px rgba(0,0,0,.2));
 }
 
+/* Tablet (≤1024px) */
 @media (max-width: 1024px) {
-  .link { font-size: 34px; }
+  .link { font-size: 48px; }
   .section { --img-height: 260px; --img-lift: 90px; --right-nudge: 16px; --link-shift: 6px; }
 }
 
+/* Mobile (≤720px) — no clamp, fixed values + extra breakpoints */
 @media (max-width: 720px) {
+  /* keep three columns; fixed spacer for the image */
   .grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-  .left, .right { grid-column: 1; text-align: center; }
-  .right { padding-left: 0; }
-  .right .list { align-items: center; }
-
-  .link { font-size: 22px; }
-  .left .link:hover,
-  .left .link:focus-visible,
-  .right .link:hover,
-  .right .link:focus-visible {
-    transform: translateY(calc(-1 * var(--link-rise)));
+    grid-template-columns: 1fr 100px 1fr;
+    gap: 10px;
+    padding: 0 12px;
   }
 
+  /* keep side alignment (no centering) */
+  .left  { grid-column: 1; text-align: right; }
+  .right { grid-column: 3; text-align: left; padding-left: 0; }
+  .right .list { align-items: flex-start; }
+
+  .list { gap: 10px; }
+
+  /* bigger, fixed link text (no clamp) */
+  .link {
+    font-size: 48px;
+    line-height: 0.1; /* prevent clipping on tall fonts */
+  }
+
+  /* brand row stacks */
   .brandGrid {
     grid-template-columns: 1fr;
     gap: 12px;
@@ -195,7 +209,23 @@
   }
   .brandLeft, .brandCenter, .brandRight { text-align: center; }
 
-  .brandText { font-size: 28px; }
+  /* larger brand text too */
+  .brandText { font-size: 32px; }
 
+  /* tune image size/lift for mobile */
   .section { --img-height: 200px; --img-lift: 70px; }
+}
+
+/* Narrow phones (≤560px) */
+@media (max-width: 560px) {
+  .grid { grid-template-columns: 1fr 84px 1fr; }
+  .link { font-size: 40px; }
+  .brandText { font-size: 30px; }
+}
+
+/* Very narrow phones (≤420px) */
+@media (max-width: 420px) {
+  .grid { grid-template-columns: 1fr 70px 1fr; }
+  .link { font-size: 38px; }
+  .brandText { font-size: 28px; }
 }
