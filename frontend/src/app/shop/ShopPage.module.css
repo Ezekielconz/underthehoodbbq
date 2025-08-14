@@ -267,6 +267,35 @@
   letter-spacing: var(--ls-cat);
 }
 
+/* ---------- nutrition layout: centered on all screens ---------- */
+.nutrition {
+  display: flex;
+  flex-direction: column;
+  align-items: center;      /* center the whole block */
+  gap: 12px;
+}
+.nutritionTable {
+  border-collapse: collapse;
+  margin: 0 auto;           /* center the table */
+  text-align: center;       /* default center */
+}
+.nutritionCaption {
+  caption-side: top;
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 8px;
+  opacity: .85;
+}
+.nutritionTable th,
+.nutritionTable td {
+  padding: 0 10px;
+  text-align: center;       /* ensure cells are centered */
+}
+.nLabel,
+.nValue {
+  text-align: center;       /* JSX Row() uses these classes */
+}
+
 /* picker list */
 .list { list-style: none; margin: 0; padding: 0; }
 .item,
