@@ -284,8 +284,7 @@
 }
 .itemActive { border-color: #111; background: #fafafa; }
 
-/* Mobile (≤720px): stack into a single column + 40% viewport image height, centered
-   + horizontal product picker */
+/* Mobile (≤720px): stack into a single column + 40% viewport image height, centered */
 @media (max-width: 720px) {
   .grid {
     grid-template-columns: 1fr;  /* was 1.2fr 1fr 0.8fr */
@@ -314,36 +313,5 @@
     height: 40vh;              /* 40% of viewport height */
     height: 40svh;             /* safe viewport on mobile */
     object-fit: contain;       /* keep aspect ratio */
-  }
-
-  /* --- horizontal product picker --- */
-  .colPicker {
-    /* optional: make the scroller breathe to screen edges */
-    margin-left: -16px;
-    margin-right: -16px;
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-
-  .list {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x proximity;
-    padding: 4px 0 8px; /* little breathing room around pills */
-  }
-  .list::-webkit-scrollbar { display: none; }
-
-  .item,
-  .itemActive {
-    width: auto;               /* override desktop 100% width */
-    flex: 0 0 auto;            /* no shrinking/wrapping */
-    white-space: nowrap;       /* keep each label on one line */
-    scroll-snap-align: center; /* snaps as you flick */
-    margin-bottom: 0;          /* remove vertical spacing from desktop */
-    padding: 10px 14px;        /* slightly bigger tap target */
   }
 }
