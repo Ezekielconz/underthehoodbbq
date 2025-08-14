@@ -11,12 +11,11 @@
 .page{
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 16px 64px;
+  padding: 0px 16px 64px;
 }
 
 /* Hero */
 .hero{
-  padding: 24px 0 12px;
   text-align: center;
 }
 .heroTitle{
@@ -25,15 +24,25 @@
   text-transform: uppercase;
   letter-spacing: .06em;
   font-size: clamp(28px, 4.5vw, 56px);
+
+  /* container styles */
+  display: inline-block;        /* shrink-wrap to text */
+  padding: 100px 10vw 30px 10vw;
+  background: #181617;          /* requested color */
+  color: #fff;                  /* white text */
+  line-height: 1.1;
+  box-shadow: 0 2px 0 rgba(0,0,0,.06);
+  margin-inline: auto;          /* center the pill */
 }
 .heroKicker{
   margin: 6px 0 0 0;
   font-family: var(--font-gaegu), ui-sans-serif, system-ui, sans-serif !important;
   font-weight: 700;
   font-size: clamp(18px, 2.6vw, 24px);
+  opacity: .9;
 }
 
-/* Grid */
+/* Grid (kept for any non-tab layouts) */
 .grid{
   display: grid;
   gap: 20px;
@@ -54,6 +63,7 @@
   overflow: clip;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 1px 0 rgba(0,0,0,.03);
 }
 .cardWide{
   grid-column: 1 / -1; /* full width row */
@@ -79,7 +89,7 @@
 .cardBody{
   padding: 16px;
   font-size: 16px;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 .list{
   margin: 10px 0 0 0;
@@ -118,14 +128,88 @@
   cursor: pointer;
   text-decoration: none;
   transition: transform .06s ease, box-shadow .2s ease, background-color .2s ease, opacity .2s ease;
+  will-change: transform;
 }
 .button:hover{ transform: translateY(-1px); }
+.button:focus-visible{
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
 .buttonAlt{
   background: var(--brand);
   color: #fff;
   border-color: var(--brand);
 }
 .buttonAlt:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+
+/* Tabs ---------------------------------------------------------------------- */
+.tabs{
+  margin-top: 12px;
+  position: sticky;           /* keeps tabs visible when scrolling on mobile */
+  top: 0;
+  z-index: 20;
+  background: var(--shop-bg);
+  padding: 8px 0;
+}
+
+/* Use this when tabs are inside the hero */
+.heroTabs{
+  position: static;           /* override sticky */
+  top: auto;
+  background: transparent;
+  border-bottom: none;
+  padding: 10px 0 0;
+}
+
+.tabList{
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  list-style: none;
+  margin: 0;
+  padding: 0 2px;
+  overflow-x: auto;           /* scroll when there are many tabs */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;      /* Firefox hide */
+  justify-content: center;    /* center the tab buttons */
+}
+.tabList::-webkit-scrollbar{ display: none; } /* WebKit hide */
+
+.tab,
+.tabActive{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  text-decoration: none;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--ink);
+  transition: transform .06s ease, box-shadow .2s ease, background-color .2s ease, opacity .2s ease;
+  white-space: nowrap;
+}
+.tab:hover{ transform: translateY(-1px); }
+.tab:focus-visible{
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* Active state — class AND ARIA (CSS Modules safe) */
+.tabActive,
+.tab[aria-selected="true"]{
+  color: #fff;
+  box-shadow: 0 1px 0 rgba(0,0,0,.06), inset 0 -1px 0 rgba(255,255,255,.12);
+}
+
+.tabPanel{
+  margin-top: 16px;
+  display: grid;
+  gap: 20px;
+}
+
+/* Optional: when a 'wide' card is inside tab panel and you want full width */
+.tabPanel .cardWide{ grid-column: 1 / -1; }
 
 /* Stockists strip (optional) */
 .strip{
@@ -146,3 +230,8 @@
   text-decoration: none;
 }
 .stripLink:hover{ text-decoration: underline; }
+
+/* Motion & accessibility tweaks -------------------------------------------- */
+@media (prefers-reduced-motion: reduce){
+  .button, .buttonAlt, .tab, .tabActive{ transition: none; }
+}
