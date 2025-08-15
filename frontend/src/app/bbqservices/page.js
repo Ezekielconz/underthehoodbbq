@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useSearchParams, usePathname } from 'next/navigation';
@@ -18,7 +18,39 @@ const TABS = [
   { key: 'descaling', label: 'Descaling', Component: Descaling },
 ];
 
-export default function BBQServicesPage() {
+export default function Page() {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <PageInner />
+    </Suspense>
+  );
+}
+
+/* --------- Fallback shown while search params/pathname resolve ---------- */
+function PageSkeleton() {
+  return (
+    <div className={styles.pageRoot}>
+      <main className={styles.page}>
+        <header className={styles.hero}>
+          <h1 className={styles.heroTitle}>BBQ SERVICES</h1>
+          <nav className={`${styles.tabs} ${styles.heroTabs}`} aria-label="BBQ services tabs">
+            <ul className={styles.tabList} role="tablist">
+              {TABS.map(t => (
+                <li key={t.key} role="presentation">
+                  <span className={styles.tab}>{t.label}</span>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </header>
+        <section className={styles.tabPanel} />
+      </main>
+    </div>
+  );
+}
+
+/* --------- Actual page that uses useSearchParams/usePathname ------------ */
+function PageInner() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
@@ -39,7 +71,7 @@ export default function BBQServicesPage() {
         <header className={styles.hero}>
           <h1 className={styles.heroTitle}>BBQ SERVICES</h1>
 
-          {/* REPLACED heroKicker text with tab buttons */}
+          {/* Tabs inside hero */}
           <nav className={`${styles.tabs} ${styles.heroTabs}`} aria-label="BBQ services tabs">
             <ul className={styles.tabList} role="tablist">
               {TABS.map(tab => {
