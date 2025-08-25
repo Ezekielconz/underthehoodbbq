@@ -1,4 +1,4 @@
-/* On-theme with the Shop page ------------------------------------------------ */
+/* On-theme with the Shop page ---------------------------------------------- */
 .pageRoot{
   --shop-bg: var(--sand);
   background: var(--shop-bg);
@@ -15,24 +15,31 @@
 }
 
 /* Hero */
-.hero{
-  text-align: center;
-}
+.hero{ text-align: center; }
 .heroTitle{
+  --drop: 28px;
   margin: 0;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: .06em;
   font-size: clamp(28px, 4.5vw, 56px);
-
-  /* container styles */
-  display: inline-block;        /* shrink-wrap to text */
-  padding: 100px 10vw 30px 10vw;
-  background: #181617;          /* requested color */
-  color: #fff;                  /* white text */
+  display: inline-block;              /* shrink-wrap to text */
+  padding: 100px 10vw 70px 10vw;      /* extra bottom to clear polygon */
+  color: #fff;
   line-height: 1.1;
+  position: relative;
+  z-index: 0;
+  background: transparent;            /* visual now provided by ::before */
+}
+.heroTitle::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #181617;                /* requested color */
   box-shadow: 0 2px 0 rgba(0,0,0,.06);
-  margin-inline: auto;          /* center the pill */
+  z-index: -1;
+  /* angled bottom edge */
+  clip-path: polygon(0% 0%, 100% 0%, 100% 65%, 0% 100%);
 }
 .heroKicker{
   margin: 6px 0 0 0;
@@ -65,9 +72,7 @@
   flex-direction: column;
   box-shadow: 0 1px 0 rgba(0,0,0,.03);
 }
-.cardWide{
-  grid-column: 1 / -1; /* full width row */
-}
+.cardWide{ grid-column: 1 / -1; }
 .cardHeader{
   background: #181617;
   color: #fff;
@@ -91,22 +96,10 @@
   font-size: 16px;
   line-height: 1.6;
 }
-.list{
-  margin: 10px 0 0 0;
-  padding-left: 18px;
-}
-.specs{
-  margin: 10px 0 0 0;
-  padding-left: 18px;
-}
-.callout{
-  margin: 12px 0 0 0;
-  font-weight: 700;
-}
-.link{
-  color: var(--brand);
-  text-decoration: none;
-}
+.list{ margin: 10px 0 0 0; padding-left: 18px; }
+.specs{ margin: 10px 0 0 0; padding-left: 18px; }
+.callout{ margin: 12px 0 0 0; font-weight: 700; }
+.link{ color: var(--brand); text-decoration: none; }
 .link:hover{ text-decoration: underline; }
 
 /* Buttons */
@@ -131,10 +124,7 @@
   will-change: transform;
 }
 .button:hover{ transform: translateY(-1px); }
-.button:focus-visible{
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
-}
+.button:focus-visible{ outline: 2px solid var(--brand); outline-offset: 2px; }
 .buttonAlt{
   background: var(--brand);
   color: #fff;
@@ -142,7 +132,7 @@
 }
 .buttonAlt:hover{ filter: brightness(1.05); transform: translateY(-1px); }
 
-/* Tabs ---------------------------------------------------------------------- */
+/* Tabs + flames ------------------------------------------------------------ */
 .tabs{
   margin-top: 12px;
   position: sticky;           /* keeps tabs visible when scrolling on mobile */
@@ -150,9 +140,14 @@
   z-index: 20;
   background: var(--shop-bg);
   padding: 8px 0;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800;
+  text-align: center;
+  --tab-art: url('/icons/button1.svg'); /* mask shape */
+  --flame-speed: 0.6;
 }
 
-/* Use this when tabs are inside the hero */
+/* When tabs are inside the hero */
 .heroTabs{
   position: static;           /* override sticky */
   top: auto;
@@ -175,39 +170,144 @@
 }
 .tabList::-webkit-scrollbar{ display: none; } /* WebKit hide */
 
-.tab,
-.tabActive{
+/* Interactive tab (anchor) */
+.tab{
+  --tab-color: #181617;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 14px;
+  margin: 0 4px;
+  border: 0;
+  background: transparent;
+  position: relative;
+  overflow: visible;
+  min-height: 56px;
+  min-width: 140px;
+  cursor: pointer;
+  opacity: .9;
   text-decoration: none;
+  transition: transform .06s ease, opacity .2s ease, filter .2s ease;
+}
+.tab:hover{ transform: translateY(-1px); opacity: .98; }
+.tab:focus-visible{ outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* Masked ink + label */
+.tabInk{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-family: var(--font-hand), ui-sans-serif, system-ui, sans-serif;
+  padding: 14px 40px;
+  color: #fff;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: .04em;
-  color: var(--ink);
-  transition: transform .06s ease, box-shadow .2s ease, background-color .2s ease, opacity .2s ease;
-  white-space: nowrap;
-}
-.tab:hover{ transform: translateY(-1px); }
-.tab:focus-visible{
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
-}
-
-/* Active state — class AND ARIA (CSS Modules safe) */
-.tabActive,
-.tab[aria-selected="true"]{
-  color: #fff;
-  box-shadow: 0 1px 0 rgba(0,0,0,.06), inset 0 -1px 0 rgba(255,255,255,.12);
+  background-color: var(--tab-color);
+  -webkit-mask-image: var(--tab-art);
+  mask-image: var(--tab-art);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: 100% 160%;
+  mask-size: 100% 160%;
+  transition: background-color .28s ease;
 }
 
+/* Flames container (only visible on active tab) */
+.flames{
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  transform: translateX(-50%);
+  width: clamp(72px, 26vw, 140px);
+  height: var(--flame-h, 0px);
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+}
+
+/* Active state — via ARIA and .tabActive class for SSR */
+.tab[aria-selected="true"],
+.tabActive{
+  --tab-color: var(--brand);
+  opacity: 1;
+  filter: brightness(1.05);
+  --flame-h: 24px;
+}
+.tab[aria-selected="true"] .flames,
+.tabActive .flames{
+  opacity: 1;
+}
+
+/* Individual flames */
+.flame{
+  position: absolute;
+  bottom: 0;
+  transform-origin: center bottom;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: auto 100%;
+}
+.f1{
+  left: 25%;
+  width: calc(var(--flame-h) * 0.7);
+  height: calc(var(--flame-h) * 0.7);
+  background-image: url('/icons/flame1.svg');
+  animation-name: flip-left;
+  animation-duration: calc(7s * var(--flame-speed));
+  animation-timing-function: steps(1, end);
+  animation-iteration-count: infinite;
+  animation-delay: .4s;
+}
+.f2{
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(var(--flame-h) * 0.9);
+  height: calc(var(--flame-h) * 0.9);
+  background-image: url('/icons/flame2.svg');
+  animation-name: flip-center;
+  animation-duration: calc(6.5s * var(--flame-speed));
+  animation-timing-function: steps(1, end);
+  animation-iteration-count: infinite;
+  animation-delay: 1.1s;
+}
+.f3{
+  right: 25%;
+  width: calc(var(--flame-h) * 0.65);
+  height: calc(var(--flame-h) * 0.65);
+  background-image: url('/icons/flame3.svg');
+  animation-name: flip-right;
+  animation-duration: calc(5.8s * var(--flame-speed));
+  animation-timing-function: steps(1, end);
+  animation-iteration-count: infinite;
+  animation-delay: .9s;
+}
+
+/* flip animations */
+@keyframes flip-left{
+  0%, 46%, 100% { transform: scaleX(1); }
+  47%, 53%      { transform: scaleX(-1); }
+  54%, 99%      { transform: scaleX(1); }
+}
+@keyframes flip-center{
+  0%, 39%, 100% { transform: translateX(-50%) scaleX(1); }
+  40%, 60%      { transform: translateX(-50%) scaleX(-1); }
+  61%, 99%      { transform: translateX(-50%) scaleX(1); }
+}
+@keyframes flip-right{
+  0%, 58%, 100% { transform: scaleX(1); }
+  59%, 63%      { transform: scaleX(-1); }
+  64%, 99%      { transform: scaleX(1); }
+}
+
+/* Panels */
 .tabPanel{
   margin-top: 16px;
   display: grid;
   gap: 20px;
 }
-
 /* Optional: when a 'wide' card is inside tab panel and you want full width */
 .tabPanel .cardWide{ grid-column: 1 / -1; }
 
@@ -225,13 +325,11 @@
   font-family: var(--font-gaegu), ui-sans-serif, system-ui, sans-serif !important;
   font-weight: 700;
 }
-.stripLink{
-  color: var(--brand);
-  text-decoration: none;
-}
+.stripLink{ color: var(--brand); text-decoration: none; }
 .stripLink:hover{ text-decoration: underline; }
 
 /* Motion & accessibility tweaks -------------------------------------------- */
 @media (prefers-reduced-motion: reduce){
   .button, .buttonAlt, .tab, .tabActive{ transition: none; }
+  .flame{ animation: none; }
 }

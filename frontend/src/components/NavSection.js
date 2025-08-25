@@ -16,7 +16,7 @@ const NAV = {
     { label: 'descaling',     href: '/bbqservices' },
     { label: 'stockists',     href: '/bbqservices' },
   ],
-  centerImg: '/images/fireguy.svg',
+  centerImg: '/images/bbqguy.svg',
 };
 
 export default function NavSection({ brandText = 'Dave and Michelle King' } = {}) {

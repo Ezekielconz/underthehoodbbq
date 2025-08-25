@@ -1,0 +1,93 @@
+/* Wrapper & typography */
+.panel{
+  background: transparent;
+  color: var(--ink);
+  padding: 8px 0;
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.sectionTitle{
+  margin: 0 0 10px 0;
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  text-align: center;
+}
+
+.menuGroup{
+  margin-top: 20px;
+}
+
+.menuHeading{
+  margin: 0 0 8px 0;
+  font-size: clamp(18px, 2.2vw, 22px);
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.menuNote{
+  font-weight: 600;
+  font-size: .9em;
+  opacity: .85;
+  margin-left: .4em;
+}
+
+.menuList{
+  margin: 10px 0 0 0;
+  padding-left: 18px;
+  line-height: 1.7;
+}
+
+/* Image grid local to Catering */
+.mediaGrid{
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat( auto-fit, minmax(180px, 1fr) );
+  gap: 12px;
+}
+.mediaItem{ display: block; }
+.mediaItem img{
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+.mediaItem figcaption{
+  margin-top: 6px;
+  font-size: 14px;
+  opacity: .8;
+}
+
+/* CTAs (duplicated locally for component independence) */
+.ctaRow{ margin-top: 14px; }
+.button,
+.buttonAlt{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #111;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform .06s ease, box-shadow .2s ease, background-color .2s ease, opacity .2s ease;
+  will-change: transform;
+}
+.button:hover{ transform: translateY(-1px); text-decoration: none; }
+.button:focus-visible{ outline: 2px solid var(--brand); outline-offset: 2px; }
+.buttonAlt{
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
+.buttonAlt:hover{ filter: brightness(1.05); transform: translateY(-1px); }

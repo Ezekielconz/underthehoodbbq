@@ -37,7 +37,9 @@ function PageSkeleton() {
             <ul className={styles.tabList} role="tablist">
               {TABS.map(t => (
                 <li key={t.key} role="presentation">
-                  <span className={styles.tab}>{t.label}</span>
+                  <span className={styles.tab}>
+                    <span className={styles.tabInk}>{t.label}</span>
+                  </span>
                 </li>
               ))}
             </ul>
@@ -85,9 +87,17 @@ function PageInner() {
                       role="tab"
                       aria-selected={isActive}
                       aria-controls={`panel-${tab.key}`}
-                      className={isActive ? styles.tabActive : styles.tab}
+                      className={`${styles.tab} ${isActive ? styles.tabActive : ''}`}
                     >
-                      {tab.label}
+                      {/* Flames (only visible on active tab via CSS) */}
+                      <span className={styles.flames} aria-hidden="true">
+                        <span className={`${styles.flame} ${styles.f1}`} />
+                        <span className={`${styles.flame} ${styles.f2}`} />
+                        <span className={`${styles.flame} ${styles.f3}`} />
+                      </span>
+
+                      {/* Masked tab shape + label */}
+                      <span className={styles.tabInk}>{tab.label}</span>
                     </Link>
                   </li>
                 );
